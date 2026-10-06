@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naručivanje lijekova + Google Calendar</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#e4e7ec;--blue:#2563eb;--red:#dc2626;--amber:#d97706;--green:#15803d;--g:#0f9d58}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}.top{margin-bottom:22px}h1{margin:0;font-size:32px}.sub,.note{color:var(--muted)}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 5px 20px #1018280d;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr auto;gap:12px;align-items:end}label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}
+input{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px}button,a.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px}
+.primary{background:var(--blue);color:white}.calendar{background:var(--g);color:white}.ghost{background:#eef2ff;color:#1e40af}.danger{background:#fff1f2;color:#be123c}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.num{font-size:28px;font-weight:800}.small{font-size:13px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:11px;text-transform:uppercase;color:var(--muted)}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750}.ok{background:#ecfdf3;color:var(--green)}.soon{background:#fff7ed;color:var(--amber)}.late{background:#fef2f2;color:var(--red)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.info{background:#eff6ff;border:1px solid #bfdbfe;padding:13px 15px;border-radius:12px;margin-bottom:18px;font-size:14px}.empty{text-align:center;padding:35px;color:var(--muted)}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.stats{grid-template-columns:1fr}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:8px}td{border:0;padding:7px}}
+</style></head><body><div class="wrap">
+<div class="top"><h1>💊 Naručivanje lijekova</h1><div class="sub">Evidencija terapije + podsjetnici u Google kalendaru</div></div>
+<div class="info"><strong>📅 Google Calendar:</strong> klikni <strong>„Dodaj u Google kalendar”</strong> uz lijek i potvrdi spremanje događaja.</div>
+<div class="stats"><div class="stat"><div class="small">Ukupno lijekova</div><div class="num" id="total">0</div></div><div class="stat"><div class="small">Poziv u idućih 7 dana</div><div class="num" id="soon">0</div></div><div class="stat"><div class="small">Rok prošao / danas</div><div class="num" id="late">0</div></div></div>
+<div class="card"><h2 style="margin-top:0">Dodaj lijek</h2><form id="form" class="grid">
+<div class="wide"><label>Naziv lijeka</label><input id="name" required placeholder="npr. Adenuric 80 mg"></div>
+<div><label>Datum podizanja</label><div style="position:relative">
+<input id="pickup" type="text" inputmode="numeric" maxlength="10" required placeholder="dd.mm.yyyy" style="padding-right:48px">
+<button id="calendarBtn" type="button" aria-label="Odaberi datum iz kalendara" title="Odaberi datum iz kalendara" style="position:absolute;right:4px;top:4px;bottom:4px;width:40px;padding:0;background:#eef2ff;color:#1e40af;font-size:18px">📅</button>
+<input id="pickupPicker" type="date" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;right:0;bottom:0">
+</div></div>
+<div><label>Terapija traje (dana)</label><input id="days" type="number" min="1" value="30" required></div>
+<div><label>Nazvati ranije (dana)</label><input id="lead" type="number" min="0" value="5" required></div>
+<button class="primary" type="submit">+ Dodaj</button></form>
+<p class="note">Datumi u evidenciji prikazuju se u obliku <strong>dd.mm.yyyy</strong>.</p></div>
+<div class="card"><h2 style="margin-top:0">Moji lijekovi</h2><div id="list"></div></div></div>
+<script>
+const KEY='lijekovi_google_v2';let meds=JSON.parse(localStorage.getItem(KEY)||'[]');const $=x=>document.getElementById(x);
+$('pickup').value=fmt(new Date());$('pickupPicker').value=iso(new Date());
+function ld(s){let[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function add(d,n){let x=new Date(d);x.setDate(x.getDate()+Number(n));return x}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function compact(d){return iso(d).replaceAll('-','')}
+function fmt(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()}
+function diff(a,b){return Math.ceil((a-b)/86400000)}
+function parseInputDate(v){
+ let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+ if(!a){alert('Datum podizanja upiši u obliku dd.mm.yyyy, npr. 06.10.2026.');throw new Error('Neispravan datum')}
+ let d=+a[1],m=+a[2],y=+a[3],x=new Date(y,m-1,d);
+ if(x.getFullYear()!=y||x.getMonth()!=m-1||x.getDate()!=d){alert('Datum podizanja nije valjan.');throw new Error('Neispravan datum')}
+ return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(meds));render()}
+$('pickup').addEventListener('input',e=>{
+ let v=e.target.value.replace(/\D/g,'').slice(0,8);
+ if(v.length>4)v=v.slice(0,2)+'.'+v.slice(2,4)+'.'+v.slice(4);
+ else if(v.length>2)v=v.slice(0,2)+'.'+v.slice(2);
+ e.target.value=v;
+});
+$('calendarBtn').addEventListener('click',()=>{
+ const picker=$('pickupPicker');
+ let a=$('pickup').value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+ if(a) picker.value=a[3]+'-'+a[2]+'-'+a[1];
+ if(typeof picker.showPicker==='function') picker.showPicker();
+ else picker.click();
+});
+$('pickupPicker').addEventListener('change',e=>{
+ if(e.target.value) $('pickup').value=fmt(ld(e.target.value));
+});
+$('pickup').addEventListener('blur',e=>{
+ let a=e.target.value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+ if(a) $('pickupPicker').value=a[3]+'-'+a[2]+'-'+a[1];
+});
+$('form').onsubmit=e=>{e.preventDefault();meds.push({id:Date.now(),name:$('name').value.trim(),pickup:parseInputDate($('pickup').value),days:+$('days').value,lead:+$('lead').value});$('name').value='';save()}
+function del(id){if(confirm('Obrisati lijek?')){meds=meds.filter(m=>m.id!==id);save()}}
+function again(id){let m=meds.find(x=>x.id===id);let v=prompt('Datum novog podizanja (DD.MM.GGGG):',fmt(new Date()));if(v){let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);if(a){m.pickup=a[3]+'-'+a[2]+'-'+a[1];save()}else alert('Upiši datum u obliku DD.MM.GGGG, npr. 06.10.2026.')}}
+function calUrl(m){let end=add(ld(m.pickup),m.days),call=add(end,-m.lead),next=add(call,1);let title='Nazvati doktoricu – '+m.name;let details='Vrijeme je nazvati doktoricu radi nove terapije / recepta za '+m.name+'.%0A%0APosljednje podizanje: '+fmt(ld(m.pickup))+'.%0AOčekivani kraj terapije: '+fmt(end)+'.';return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+compact(call)+'%2F'+compact(next)+'&details='+details}
+function render(){let t=new Date();t.setHours(0,0,0,0);let s=0,l=0;let rows=meds.map(m=>{let p=ld(m.pickup),e=add(p,m.days),c=add(e,-m.lead),d=diff(c,t),cl='ok',st='';if(d<0){cl='late';st='Rok prošao '+Math.abs(d)+' d.';l++}else if(d===0){cl='late';st='Nazvati danas';l++}else if(d<=7){cl='soon';st='Za '+d+' d.';s++}else st='Za '+d+' d.';return `<tr><td><strong>${esc(m.name)}</strong></td><td>${fmt(p)}</td><td>${m.days} dana</td><td><strong>${fmt(c)}</strong></td><td>${fmt(e)}</td><td><span class="badge ${cl}">${st}</span></td><td><div class="actions"><a class="btn calendar" target="_blank" href="${calUrl(m)}">📅 Dodaj u Google kalendar</a><button class="ghost" onclick="again(${m.id})">✓ Podignut</button><button class="danger" onclick="del(${m.id})">Obriši</button></div></td></tr>`}).join('');$('total').textContent=meds.length;$('soon').textContent=s;$('late').textContent=l;$('list').innerHTML=meds.length?`<table><thead><tr><th>Lijek</th><th>Podignut</th><th>Trajanje</th><th>Nazvati</th><th>Kraj terapije</th><th>Status</th><th>Akcije</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">Još nema unesenih lijekova.</div>'}render();
+</script></body></html>
