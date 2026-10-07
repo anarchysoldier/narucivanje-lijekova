@@ -1,131 +1,100 @@
 <!doctype html>
-<html lang="hr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Naručivanje lijekova + Google Calendar</title>
-<style>
-:root{--bg:#f4f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#e4e7ec;--blue:#2563eb;--red:#dc2626;--amber:#d97706;--green:#15803d;--g:#0f9d58}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}.top{margin-bottom:22px}h1{margin:0;font-size:32px}.sub,.note{color:var(--muted)}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 5px 20px #1018280d;margin-bottom:18px}
-.grid{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr auto;gap:12px;align-items:end}label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}
-input{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:10px;font-size:15px}button,a.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px}
-.primary{background:var(--blue);color:white}.calendar{background:var(--g);color:white}.ghost{background:#eef2ff;color:#1e40af}.danger{background:#fff1f2;color:#be123c}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.num{font-size:28px;font-weight:800}.small{font-size:13px;color:var(--muted)}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:11px;text-transform:uppercase;color:var(--muted)}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750}.ok{background:#ecfdf3;color:var(--green)}.soon{background:#fff7ed;color:var(--amber)}.late{background:#fef2f2;color:var(--red)}
-.actions{display:flex;gap:6px;flex-wrap:wrap}.info{background:#eff6ff;border:1px solid #bfdbfe;padding:13px 15px;border-radius:12px;margin-bottom:18px;font-size:14px}.empty{text-align:center;padding:35px;color:var(--muted)}
-.login-overlay{max-width:430px;margin:70px auto}.login-card{text-align:left}.login-icon{font-size:42px;text-align:center;margin-bottom:8px}.login-title{text-align:center;margin:0 0 6px}.login-sub{text-align:center;color:var(--muted);margin:0 0 22px}.login-card input{margin-bottom:14px}.login-btn{width:100%;font-size:15px;padding:12px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f2f4f7;padding:4px;border-radius:12px;margin-bottom:20px}.auth-tab{background:transparent;color:var(--muted)}.auth-tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px #10182818}.register-only{display:none}.register-mode .register-only{display:block}.register-mode .login-only{display:none}.login-msg{min-height:20px;margin-top:12px;font-size:13px;color:var(--red)}.app-user{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:12px}.hidden{display:none!important}
-@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.stats{grid-template-columns:1fr}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:8px}td{border:0;padding:7px}}
-</style></head><body><div class="wrap">
-<div id="loginScreen" class="login-overlay">
-  <div class="card login-card">
-    <div class="login-icon">💊</div>
-    <h1 class="login-title">Naručivanje lijekova</h1>
-    <p id="authSubtitle" class="login-sub">Prijavi se za pristup svojoj evidenciji lijekova.</p>
-    <div class="auth-tabs">
-      <button id="tabLogin" class="auth-tab active" type="button">Prijava</button>
-      <button id="tabRegister" class="auth-tab" type="button">Registracija</button>
-    </div>
-    <form id="loginForm" method="post" action="#" autocomplete="on">
-      <label for="loginEmail">Email</label>
-      <input id="loginEmail" name="username" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="tvoj@email.com">
-      <label for="loginPassword">Lozinka</label>
-      <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••">
-      <div class="register-only">
-        <label for="confirmPassword">Ponovi lozinku</label>
-        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="••••••••">
-      </div>
-      <button id="loginBtn" class="primary login-btn" type="submit">🔐 Prijavi se</button>
-      <div id="loginMsg" class="login-msg"></div>
-    </form>
-  </div>
-</div>
-<div id="appArea" class="hidden">
-<div class="app-user"><span id="signedUser" class="note"></span><button id="logoutBtn" class="ghost" type="button">Odjava</button></div>
-<div class="top"><h1>💊 Naručivanje lijekova</h1><div class="sub">Evidencija terapije + podsjetnici u Google kalendaru</div></div>
-<div class="info"><strong>📅 Google Calendar:</strong> klikni <strong>„Dodaj u Google kalendar”</strong> uz lijek i potvrdi spremanje događaja.</div>
-<div class="stats"><div class="stat"><div class="small">Ukupno lijekova</div><div class="num" id="total">0</div></div><div class="stat"><div class="small">Poziv u idućih 7 dana</div><div class="num" id="soon">0</div></div><div class="stat"><div class="small">Rok prošao / danas</div><div class="num" id="late">0</div></div></div>
-<div class="card"><h2 style="margin-top:0">Dodaj lijek</h2><form id="form" class="grid">
-<div class="wide"><label>Naziv lijeka</label><input id="name" required placeholder="npr. Adenuric 80 mg"></div>
-<div><label>Datum podizanja</label><div style="position:relative">
-<input id="pickup" type="text" inputmode="numeric" maxlength="10" required placeholder="dd.mm.yyyy" style="padding-right:48px">
-<button id="calendarBtn" type="button" aria-label="Odaberi datum iz kalendara" title="Odaberi datum iz kalendara" style="position:absolute;right:4px;top:4px;bottom:4px;width:40px;padding:0;background:#eef2ff;color:#1e40af;font-size:18px">📅</button>
-<input id="pickupPicker" type="date" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;right:0;bottom:0">
-</div></div>
-<div><label>Terapija traje (dana)</label><input id="days" type="number" min="1" value="30" required></div>
-<div><label>Nazvati ranije (dana)</label><input id="lead" type="number" min="0" value="5" required></div>
-<button class="primary" type="submit">+ Dodaj</button></form>
-<p class="note">Datumi u evidenciji prikazuju se u obliku <strong>dd.mm.yyyy</strong>.</p></div>
-<div class="card"><h2 style="margin-top:0">Moji lijekovi</h2><div id="list"></div></div></div>
-</div>
+<html lang="hr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moji lijekovi</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#e4e7ec;--blue:#2563eb;--green:#15803d;--amber:#d97706;--red:#dc2626;--purple:#7c3aed}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+.wrap{max-width:1250px;margin:auto;padding:26px 16px 60px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px #1018280d;margin-bottom:16px}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted)}.hidden{display:none!important}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+button,a.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px}.primary{background:var(--blue);color:#fff}.ghost{background:#eef2ff;color:#1e40af}.green{background:#ecfdf3;color:#067647}.danger{background:#fff1f2;color:#be123c}.calendar{background:#0f9d58;color:#fff}.purple{background:#f3e8ff;color:#6d28d9}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #d0d5dd;border-radius:10px;font:inherit;background:#fff}textarea{min-height:75px;resize:vertical}label{font-size:12px;font-weight:750;display:block;margin-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.span2{grid-column:span 2}.span4{grid-column:1/-1}.actions{display:flex;gap:6px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:16px 0}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px}.num{font-size:27px;font-weight:850}
+.med{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}.medhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.medname{font-size:20px;font-weight:800}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}.pill{padding:5px 9px;border-radius:999px;background:#f2f4f7;font-size:12px;font-weight:700}.ok{background:#ecfdf3;color:#067647}.soon{background:#fff7ed;color:#b54708}.late{background:#fef2f2;color:#b42318}.ordered{background:#f3e8ff;color:#6d28d9}
+.history{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line);font-size:13px}
+.login{max-width:430px;margin:60px auto}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#f2f4f7;padding:4px;border-radius:12px;margin:18px 0}.auth-tab{background:transparent;color:var(--muted)}.auth-tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px #10182818}.regonly{display:none}.regmode .regonly{display:block}.msg{min-height:20px;margin-top:10px;color:var(--red);font-size:13px}.profilebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.profilebar select{width:auto;min-width:150px}
+dialog{border:0;border-radius:18px;max-width:560px;width:calc(100% - 30px);padding:0;box-shadow:0 20px 60px #0003}dialog::backdrop{background:#0006}.dlg{padding:20px}
+@media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.span2,.span4{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.medhead{display:block}}
+@media(max-width:520px){.grid,.stats{grid-template-columns:1fr}.span2,.span4{grid-column:auto}.actions button,.actions a{flex:1;text-align:center}}
+</style></head>
+<body><div class="wrap">
+<section id="auth" class="login card">
+<div style="font-size:42px;text-align:center">💊</div><h1 style="text-align:center;margin-bottom:4px">Moji lijekovi</h1>
+<p id="authSub" class="muted" style="text-align:center">Prijavi se za pristup svojoj evidenciji.</p>
+<div class="auth-tabs"><button id="tLogin" class="auth-tab active">Prijava</button><button id="tReg" class="auth-tab">Registracija</button></div>
+<form id="authForm" autocomplete="on">
+<label>Email</label><input id="email" name="username" type="email" autocomplete="username" required>
+<label style="margin-top:10px">Lozinka</label><input id="pass" name="password" type="password" autocomplete="current-password" minlength="6" required>
+<div class="regonly"><label style="margin-top:10px">Ponovi lozinku</label><input id="pass2" type="password" autocomplete="new-password"></div>
+<button id="authBtn" class="primary" style="width:100%;margin-top:14px">🔐 Prijavi se</button><div id="authMsg" class="msg"></div>
+</form></section>
+
+<main id="app" class="hidden">
+<div class="top"><div><h1 style="margin-bottom:3px">💊 Moji lijekovi</h1><div class="muted">Terapija, zaliha i povijest podizanja</div></div>
+<div class="profilebar"><span id="who" class="muted"></span><button id="logout" class="ghost">Odjava</button></div></div>
+
+<div class="top" style="margin-top:14px"><div class="profilebar"><strong>Profil:</strong><select id="profile"></select><button id="addProfile" class="ghost">+ Član obitelji</button></div><button id="showAdd" class="primary">+ Dodaj lijek</button></div>
+<div class="stats"><div class="stat"><div class="muted">Aktivni lijekovi</div><div id="sTotal" class="num">0</div></div><div class="stat"><div class="muted">Nazvati ≤ 7 dana</div><div id="sSoon" class="num">0</div></div><div class="stat"><div class="muted">Rok prošao / danas</div><div id="sLate" class="num">0</div></div><div class="stat"><div class="muted">Recept naručen</div><div id="sOrdered" class="num">0</div></div></div>
+<div id="meds" class="card"></div>
+</main>
+
+<dialog id="medDlg"><div class="dlg"><div class="top"><h2 id="medDlgTitle">Dodaj lijek</h2><button onclick="medDlg.close()" class="ghost">✕</button></div>
+<form id="medForm" class="grid">
+<input id="editId" type="hidden">
+<div class="span2"><label>Naziv lijeka</label><input id="name" required placeholder="npr. Adenuric 80 mg"></div>
+<div><label>Broj tableta / količina</label><input id="qty" type="number" min="0" step="0.01" placeholder="npr. 30"></div>
+<div><label>Doza dnevno</label><input id="dose" type="number" min="0.01" step="0.01" placeholder="npr. 1"></div>
+<div><label>Trajanje terapije (dana)</label><input id="days" type="number" min="1" value="30" required></div>
+<div><label>Nazvati ranije (dana)</label><input id="lead" type="number" min="0" value="5" required></div>
+<div><label>Prvo/zadnje podizanje</label><input id="pickup" type="date" required></div>
+<div><label>Profil</label><select id="medProfile"></select></div>
+<div class="span4"><label>Bilješka</label><textarea id="note" placeholder="npr. uzimati navečer, kontrola..."></textarea></div>
+<div class="span4 muted" id="autoDays"></div>
+<div class="span4 actions"><button class="primary" type="submit">Spremi</button><button type="button" class="ghost" onclick="medDlg.close()">Odustani</button></div>
+</form></div></dialog>
+
+<dialog id="pickupDlg"><div class="dlg"><div class="top"><h2>✓ Novo podizanje</h2><button onclick="pickupDlg.close()" class="ghost">✕</button></div>
+<form id="pickupForm" class="grid"><input id="pickupMedId" type="hidden">
+<div><label>Datum</label><input id="newPickupDate" type="date" required></div><div><label>Količina</label><input id="newPickupQty" type="number" min="0" step="0.01"></div>
+<div class="span2"><label>Bilješka</label><input id="pickupNote"></div><div class="span2 actions"><button class="primary">Spremi podizanje</button><button type="button" class="ghost" onclick="pickupDlg.close()">Odustani</button></div></form></div></dialog>
+
 <script>
 const sb=window.supabase.createClient('https://puqptcgghjekryfcrdsu.supabase.co','sb_publishable_eIpUvEX6CgKwDIw0-V--OQ_x3TeKA04');
-const $=x=>document.getElementById(x);let meds=[],user=null;
-function ld(s){let[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
-function add(d,n){let x=new Date(d);x.setDate(x.getDate()+Number(n));return x}
-function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function compact(d){return iso(d).replaceAll('-','')}
-function fmt(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()}
-function diff(a,b){return Math.ceil((a-b)/86400000)}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function parseDate(v){let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);if(!a)throw Error('Datum upiši kao dd.mm.yyyy.');let d=+a[1],m=+a[2],y=+a[3],x=new Date(y,m-1,d);if(x.getFullYear()!=y||x.getMonth()!=m-1||x.getDate()!=d)throw Error('Datum nije valjan.');return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
-async function load(){let {data,error}=await sb.from('lijekovi').select('*').order('datum_podizanja',{ascending:false});if(error){alert(error.message);return}meds=data||[];render()}
-async function del(id){if(confirm('Obrisati lijek?')){let {error}=await sb.from('lijekovi').delete().eq('id',id);if(error)alert(error.message);else load()}}
-async function again(id){let v=prompt('Datum novog podizanja (DD.MM.GGGG):',fmt(new Date()));if(!v)return;try{let {error}=await sb.from('lijekovi').update({datum_podizanja:parseDate(v)}).eq('id',id);if(error)throw error;load()}catch(e){alert(e.message)}}
-function calUrl(m){let end=add(ld(m.datum_podizanja),m.trajanje_dana),call=add(end,-m.nazvati_ranije_dana),next=add(call,1);return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Nazvati doktoricu – '+m.naziv)+'&dates='+compact(call)+'%2F'+compact(next)+'&details='+encodeURIComponent('Nazvati doktoricu radi novog recepta za '+m.naziv+'.\nPosljednje podizanje: '+fmt(ld(m.datum_podizanja))+'.')}
-function render(){let t=new Date();t.setHours(0,0,0,0);let so=0,la=0;let rows=meds.map(m=>{let p=ld(m.datum_podizanja),e=add(p,m.trajanje_dana),c=add(e,-m.nazvati_ranije_dana),d=diff(c,t),cl='ok',st='';if(d<0){cl='late';st='Rok prošao '+Math.abs(d)+' d.';la++}else if(d===0){cl='late';st='Nazvati danas';la++}else if(d<=7){cl='soon';st='Za '+d+' d.';so++}else st='Za '+d+' d.';return `<tr><td><strong>${esc(m.naziv)}</strong></td><td>${fmt(p)}</td><td>${m.trajanje_dana} dana</td><td><strong>${fmt(c)}</strong></td><td>${fmt(e)}</td><td><span class="badge ${cl}">${st}</span></td><td><div class="actions"><a class="btn calendar" target="_blank" href="${calUrl(m)}">📅 Google kalendar</a><button class="ghost" onclick="again(${m.id})">✓ Podignut</button><button class="danger" onclick="del(${m.id})">Obriši</button></div></td></tr>`}).join('');$('total').textContent=meds.length;$('soon').textContent=so;$('late').textContent=la;$('list').innerHTML=meds.length?`<table><thead><tr><th>Lijek</th><th>Podignut</th><th>Trajanje</th><th>Nazvati</th><th>Kraj terapije</th><th>Status</th><th>Akcije</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">Još nema spremljenih lijekova.</div>'}
-function showLogin(){document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('appArea').classList.add('hidden')}
-function showApp(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appArea').classList.remove('hidden');document.getElementById('signedUser').textContent=user?.email||''}
-let authMode='login';
-function setAuthMode(mode){
- authMode=mode;
- const card=document.querySelector('.login-card');
- const reg=mode==='register';
- card.classList.toggle('register-mode',reg);
- document.getElementById('tabLogin').classList.toggle('active',!reg);
- document.getElementById('tabRegister').classList.toggle('active',reg);
- document.getElementById('authSubtitle').textContent=reg?'Napravi svoj račun za sigurnu evidenciju lijekova.':'Prijavi se za pristup svojoj evidenciji lijekova.';
- document.getElementById('loginBtn').textContent=reg?'👤 Kreiraj račun':'🔐 Prijavi se';
- document.getElementById('loginPassword').autocomplete=reg?'new-password':'current-password';
- document.getElementById('confirmPassword').required=reg;
- document.getElementById('loginMsg').textContent='';
-}
-document.getElementById('tabLogin').addEventListener('click',()=>setAuthMode('login'));
-document.getElementById('tabRegister').addEventListener('click',()=>setAuthMode('register'));
-document.getElementById('loginForm').addEventListener('submit',async e=>{
- e.preventDefault();
- const msg=document.getElementById('loginMsg'),btn=document.getElementById('loginBtn');
- const email=document.getElementById('loginEmail').value.trim();
- const password=document.getElementById('loginPassword').value;
- msg.textContent='';
- if(authMode==='register'){
-   const confirm=document.getElementById('confirmPassword').value;
-   if(password!==confirm){msg.textContent='Lozinke se ne podudaraju.';return}
-   if(password.length<6){msg.textContent='Lozinka mora imati najmanje 6 znakova.';return}
-   btn.disabled=true;btn.textContent='Kreiranje računa...';
-   const {data,error}=await sb.auth.signUp({email,password});
-   btn.disabled=false;btn.textContent='👤 Kreiraj račun';
-   if(error){msg.textContent='Registracija nije uspjela: '+error.message;return}
-   if(data.session){
-     user=data.user;showApp();await load();
-   }else{
-     msg.style.color='var(--green)';
-     msg.textContent='Račun je napravljen. Provjeri email i potvrdi registraciju, zatim se prijavi.';
-     setTimeout(()=>{setAuthMode('login');msg.style.color='';},5000);
-   }
-   return;
- }
- btn.disabled=true;btn.textContent='Prijava...';
- const {data,error}=await sb.auth.signInWithPassword({email,password});
- btn.disabled=false;btn.textContent='🔐 Prijavi se';
- if(error){msg.textContent='Pogrešan email ili lozinka.';return}
- user=data.user;showApp();await load();
-});
-document.getElementById('logoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();user=null;meds=[];showLogin()});
-$('pickup').value=fmt(new Date());$('pickupPicker').value=iso(new Date());
-$('pickup').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'.'+v.slice(2,4)+'.'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'.'+v.slice(2);e.target.value=v});
-$('calendarBtn').onclick=()=>{let p=$('pickupPicker');if(p.showPicker)p.showPicker();else p.click()};
-$('pickupPicker').onchange=e=>{if(e.target.value)$('pickup').value=fmt(ld(e.target.value))};
-$('form').onsubmit=async e=>{e.preventDefault();if(!user){alert('Prvo se prijavi.');return}try{let row={user_id:user.id,naziv:$('name').value.trim(),datum_podizanja:parseDate($('pickup').value),trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value};let {error}=await sb.from('lijekovi').insert(row);if(error)throw error;$('name').value='';await load()}catch(e){alert(e.message)}};
-(async()=>{let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;showApp();await load()}else showLogin()})();
-</script></body></html>
+const $=id=>document.getElementById(id); let user=null,meds=[],profiles=[],pickups=[],mode='login',selectedProfile='all';
+const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const D=s=>{let[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}, add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+Number(n));return x};
+const fmt=d=>String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const compact=d=>iso(d).replaceAll('-',''); const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const diff=(a,b)=>Math.ceil((a-b)/86400000);
+function setMode(m){mode=m;let r=m==='register';$('auth').classList.toggle('regmode',r);$('tLogin').classList.toggle('active',!r);$('tReg').classList.toggle('active',r);$('pass').autocomplete=r?'new-password':'current-password';$('pass2').required=r;$('authBtn').textContent=r?'👤 Kreiraj račun':'🔐 Prijavi se';$('authSub').textContent=r?'Napravi svoj račun.':'Prijavi se za pristup svojoj evidenciji.';$('authMsg').textContent=''}
+$('tLogin').onclick=()=>setMode('login');$('tReg').onclick=()=>setMode('register');
+$('authForm').onsubmit=async e=>{e.preventDefault();let email=$('email').value.trim(),password=$('pass').value,msg=$('authMsg');msg.textContent='';if(mode==='register'){if(password!==$('pass2').value){msg.textContent='Lozinke se ne podudaraju.';return}let {data,error}=await sb.auth.signUp({email,password});if(error){msg.textContent=error.message;return}if(data.session){user=data.user;await enter()}else msg.textContent='Račun je napravljen. Potvrdi email pa se prijavi.'}else{let {data,error}=await sb.auth.signInWithPassword({email,password});if(error){msg.textContent='Pogrešan email ili lozinka.';return}user=data.user;await enter()}};
+$('logout').onclick=async()=>{await sb.auth.signOut();user=null;$('app').classList.add('hidden');$('auth').classList.remove('hidden')};
+async function enter(){$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=user.email;await ensureProfile();await loadAll()}
+async function ensureProfile(){let {data}=await sb.from('profili').select('*').order('id');if(!data?.length){await sb.from('profili').insert({user_id:user.id,naziv:'Ja'});data=(await sb.from('profili').select('*').order('id')).data}profiles=data||[]}
+async function loadAll(){let [m,p]=await Promise.all([sb.from('lijekovi').select('*').eq('aktivan',true).order('naziv'),sb.from('podizanja').select('*').order('datum',{ascending:false})]);if(m.error){alert('Prvo pokreni Supabase v2 migraciju.\\n'+m.error.message);return}meds=m.data||[];pickups=p.data||[];renderProfiles();render()}
+function renderProfiles(){let opts=profiles.map(p=>`<option value="${p.id}">${esc(p.naziv)}</option>`).join('');$('profile').innerHTML='<option value="all">Svi profili</option>'+opts;$('profile').value=selectedProfile;$('medProfile').innerHTML=opts}
+$('profile').onchange=e=>{selectedProfile=e.target.value;render()};
+$('addProfile').onclick=async()=>{let naziv=prompt('Ime profila / člana obitelji:');if(!naziv?.trim())return;let {error}=await sb.from('profili').insert({user_id:user.id,naziv:naziv.trim()});if(error)alert(error.message);else{await ensureProfile();renderProfiles();render()}};
+function calcDays(){let q=+$('qty').value,d=+$('dose').value;if(q>0&&d>0){let n=Math.floor(q/d);$('days').value=n;$('autoDays').textContent=`Automatski izračun: ${q} ÷ ${d} = ${n} dana terapije.`}else $('autoDays').textContent=''}
+$('qty').oninput=calcDays;$('dose').oninput=calcDays;
+$('showAdd').onclick=()=>{medForm.reset();$('editId').value='';$('days').value=30;$('lead').value=5;$('pickup').value=today();$('medDlgTitle').textContent='Dodaj lijek';renderProfiles();medDlg.showModal()};
+$('medForm').onsubmit=async e=>{e.preventDefault();let id=$('editId').value,row={naziv:$('name').value.trim(),kolicina_pakiranja:$('qty').value||null,doza_dnevno:$('dose').value||null,trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value,biljeska:$('note').value.trim()||null,profil_id:+$('medProfile').value};if(id){let {error}=await sb.from('lijekovi').update(row).eq('id',id);if(error)return alert(error.message)}else{row.user_id=user.id;row.datum_podizanja=$('pickup').value;let {data,error}=await sb.from('lijekovi').insert(row).select().single();if(error)return alert(error.message);await sb.from('podizanja').insert({user_id:user.id,lijek_id:data.id,datum:$('pickup').value,kolicina:$('qty').value||null})}medDlg.close();await loadAll()};
+function editMed(id){let m=meds.find(x=>x.id===id);if(!m)return;$('editId').value=id;$('name').value=m.naziv;$('qty').value=m.kolicina_pakiranja??'';$('dose').value=m.doza_dnevno??'';$('days').value=m.trajanje_dana;$('lead').value=m.nazvati_ranije_dana;$('pickup').value=m.datum_podizanja;$('note').value=m.biljeska??'';renderProfiles();$('medProfile').value=m.profil_id;$('medDlgTitle').textContent='Uredi lijek';calcDays();medDlg.showModal()}
+function newPickup(id){let m=meds.find(x=>x.id===id);$('pickupMedId').value=id;$('newPickupDate').value=today();$('newPickupQty').value=m?.kolicina_pakiranja??'';$('pickupNote').value='';pickupDlg.showModal()}
+$('pickupForm').onsubmit=async e=>{e.preventDefault();let id=+$('pickupMedId').value,date=$('newPickupDate').value,qty=$('newPickupQty').value||null;let {error}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});if(error)return alert(error.message);let up={datum_podizanja:date,recept_narucen:false};if(qty)up.kolicina_pakiranja=qty;await sb.from('lijekovi').update(up).eq('id',id);pickupDlg.close();await loadAll()};
+async function toggleOrdered(id,val){let {error}=await sb.from('lijekovi').update({recept_narucen:val}).eq('id',id);if(error)alert(error.message);else loadAll()}
+async function archiveMed(id){if(!confirm('Arhivirati lijek? Povijest ostaje sačuvana.'))return;await sb.from('lijekovi').update({aktivan:false}).eq('id',id);loadAll()}
+async function deletePickup(id){if(!confirm('Obrisati ovaj zapis podizanja?'))return;await sb.from('podizanja').delete().eq('id',id);loadAll()}
+function hist(id){let el=$('h'+id);el.classList.toggle('hidden')}
+function profileName(id){return profiles.find(p=>p.id===id)?.naziv||'Ja'}
+function medPickups(id){return pickups.filter(p=>p.lijek_id===id).sort((a,b)=>b.datum.localeCompare(a.datum))}
+function averageGap(ps){if(ps.length<2)return null;let gaps=[];for(let i=0;i<ps.length-1;i++)gaps.push(Math.round((D(ps[i].datum)-D(ps[i+1].datum))/86400000));return gaps.reduce((a,b)=>a+b,0)/gaps.length}
+function calUrl(m,call){let next=add(call,1);return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Nazvati liječnika – '+m.naziv)+'&dates='+compact(call)+'%2F'+compact(next)+'&details='+encodeURIComponent('Vrijeme je naručiti novi recept za '+m.naziv+'.')}
+function render(){let list=meds.filter(m=>selectedProfile==='all'||String(m.profil_id)===String(selectedProfile)),now=D(today()),soon=0,late=0,ord=0;let html=list.map(m=>{let ps=medPickups(m.id),last=ps[0]?.datum||m.datum_podizanja,end=add(D(last),m.trajanje_dana),call=add(end,-m.nazvati_ranije_dana),d=diff(call,now),status,cl;if(m.recept_narucen){status='Recept naručen';cl='ordered';ord++}else if(d<=0){status=d===0?'Nazvati danas':'Rok prošao '+Math.abs(d)+' d.';cl='late';late++}else if(d<=7){status='Nazvati za '+d+' d.';cl='soon';soon++}else{status='U redu · '+d+' d.';cl='ok'}let avg=averageGap(ps),stock=m.kolicina_pakiranja&&m.doza_dnevno?Math.max(0,Math.ceil((D(last).getTime()+m.trajanje_dana*86400000-now.getTime())/86400000*m.doza_dnevno)):null;let hrows=ps.map((p,i)=>`<tr><td>${fmt(D(p.datum))}</td><td>${p.kolicina??'—'}</td><td>${esc(p.biljeska||'')}</td><td>${i?`<button class="danger" onclick="deletePickup(${p.id})">Obriši</button>`:''}</td></tr>`).join('');return `<div class="med"><div class="medhead"><div><div class="medname">${esc(m.naziv)}</div><div class="meta"><span class="pill">👤 ${esc(profileName(m.profil_id))}</span><span class="pill ${cl}">${status}</span><span class="pill">Podignut ${fmt(D(last))}</span><span class="pill">Kraj ${fmt(end)}</span>${stock!==null?`<span class="pill">📦 ~${stock} preostalo</span>`:''}</div></div></div>${m.biljeska?`<p class="muted">📝 ${esc(m.biljeska)}</p>`:''}<div class="muted" style="margin-bottom:10px">${m.kolicina_pakiranja?`Pakiranje: <b>${m.kolicina_pakiranja}</b> · `:''}${m.doza_dnevno?`Doza: <b>${m.doza_dnevno}/dan</b> · `:''}Terapija: <b>${m.trajanje_dana} dana</b>${avg?` · Prosjek podizanja: <b>${avg.toFixed(1)} dana</b>`:''}</div><div class="actions"><button class="primary" onclick="newPickup(${m.id})">✓ Podignut</button><button class="${m.recept_narucen?'ghost':'purple'}" onclick="toggleOrdered(${m.id},${!m.recept_narucen})">${m.recept_narucen?'↩ Poništi naručeno':'☎ Recept naručen'}</button><a class="btn calendar" target="_blank" href="${calUrl(m,call)}">📅 Kalendar</a><button class="ghost" onclick="hist(${m.id})">📜 Povijest (${ps.length})</button><button class="ghost" onclick="editMed(${m.id})">✏️ Uredi</button><button class="danger" onclick="archiveMed(${m.id})">Arhiviraj</button></div><div id="h${m.id}" class="history hidden"><h3>Povijest podizanja</h3>${ps.length?`<table><thead><tr><th>Datum</th><th>Količina</th><th>Bilješka</th><th></th></tr></thead><tbody>${hrows}</tbody></table>`:'Nema zapisa.'}</div></div>`}).join('');$('sTotal').textContent=list.length;$('sSoon').textContent=soon;$('sLate').textContent=late;$('sOrdered').textContent=ord;$('meds').innerHTML=html||'<div class="muted" style="text-align:center;padding:30px">Nema aktivnih lijekova za ovaj profil.</div>'}
+(async()=>{let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;await enter()}})();
+</script></div></body></html>
