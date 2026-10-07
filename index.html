@@ -5,40 +5,91 @@
 <title>Moji lijekovi</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#e4e7ec;--blue:#2563eb;--green:#15803d;--amber:#d97706;--red:#dc2626;--purple:#7c3aed}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-.wrap{max-width:1250px;margin:auto;padding:26px 16px 60px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px #1018280d;margin-bottom:16px}
-h1,h2,h3{margin-top:0}.muted{color:var(--muted)}.hidden{display:none!important}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-button,a.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px}.primary{background:var(--blue);color:#fff}.ghost{background:#eef2ff;color:#1e40af}.green{background:#ecfdf3;color:#067647}.danger{background:#fff1f2;color:#be123c}.calendar{background:#0f9d58;color:#fff}.purple{background:#f3e8ff;color:#6d28d9}
-input,select,textarea{width:100%;padding:10px 11px;border:1px solid #d0d5dd;border-radius:10px;font:inherit;background:#fff}textarea{min-height:75px;resize:vertical}label{font-size:12px;font-weight:750;display:block;margin-bottom:5px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.span2{grid-column:span 2}.span4{grid-column:1/-1}.actions{display:flex;gap:6px;flex-wrap:wrap}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:16px 0}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px}.num{font-size:27px;font-weight:850}
-.med{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}.medhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.medname{font-size:20px;font-weight:800}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}.pill{padding:5px 9px;border-radius:999px;background:#f2f4f7;font-size:12px;font-weight:700}.ok{background:#ecfdf3;color:#067647}.soon{background:#fff7ed;color:#b54708}.late{background:#fef2f2;color:#b42318}.ordered{background:#f3e8ff;color:#6d28d9}
-.history{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line);font-size:13px}
-.login{max-width:430px;margin:60px auto}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#f2f4f7;padding:4px;border-radius:12px;margin:18px 0}.auth-tab{background:transparent;color:var(--muted)}.auth-tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px #10182818}.regonly{display:none}.regmode .regonly{display:block}.msg{min-height:20px;margin-top:10px;color:var(--red);font-size:13px}.guest-sep{text-align:center;margin:14px;color:var(--muted);font-size:12px}.guest-banner{background:#fffaeb;border:1px solid #fedf89;color:#93370d;border-radius:12px;padding:10px 13px;margin:14px 0;font-size:13px}.guest-btn{width:100%;background:#f2f4f7;color:#344054}.profilebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.profilebar select{width:auto;min-width:150px}.archive-fab{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:20;writing-mode:vertical-rl;padding:15px 10px;border-radius:14px 0 0 14px;box-shadow:0 5px 18px #10182824}.archive-fab .count{background:#fff;color:#6d28d9;border-radius:999px;padding:3px 6px;margin-top:7px}.archive-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
-dialog{border:0;border-radius:18px;max-width:560px;width:calc(100% - 30px);padding:0;box-shadow:0 20px 60px #0003}dialog::backdrop{background:#0006}.dlg{padding:20px}
+:root{
+  --bg:#f4f8f8;--card:#ffffff;--text:#17333a;--muted:#667b80;--line:#dce7e8;
+  --primary:#087f8c;--primary-dark:#08636d;--primary-soft:#e9f6f7;
+  --green:#16835b;--green-soft:#eaf7f1;--amber:#b76b12;--amber-soft:#fff6e8;
+  --red:#c84b4b;--red-soft:#fff0f0;--purple:#64748b;--purple-soft:#f1f5f9;
+  --shadow:0 2px 10px rgba(20,60,66,.055)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.45}
+.wrap{max-width:1080px;margin:auto;padding:20px 18px 50px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px;box-shadow:var(--shadow);margin-bottom:12px}
+h1,h2,h3{margin-top:0;color:#14353c}h1{font-size:22px;letter-spacing:-.3px}h2{font-size:18px}h3{font-size:14px}
+.muted{color:var(--muted)}.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+button,a.btn{border:1px solid transparent;border-radius:7px;padding:7px 10px;font-weight:650;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:1.25;transition:.15s}
+button:hover,a.btn:hover{filter:brightness(.98)}
+.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary-dark)}
+.ghost{background:#fff;color:#49646a;border-color:var(--line)}
+.green{background:var(--green-soft);color:#126a4c;border-color:#cfeade}
+.danger{background:#fff;color:#a83f3f;border-color:#efd5d5}
+.calendar{background:#eef8f3;color:#17734f;border-color:#d4ebdf}
+.purple{background:#f5f7f9;color:#53656a;border-color:#dfe6e8}
+input,select,textarea{width:100%;padding:8px 9px;border:1px solid #cfdcde;border-radius:7px;font:inherit;font-size:13px;background:#fff;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#72b9c0;box-shadow:0 0 0 3px rgba(8,127,140,.08)}
+textarea{min-height:64px;resize:vertical}
+label{font-size:11px;font-weight:700;color:#526b70;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.25px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.span2{grid-column:span 2}.span4{grid-column:1/-1}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.stat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 13px;box-shadow:0 1px 5px rgba(20,60,66,.03)}
+.stat .muted{font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.25px}.num{font-size:22px;font-weight:750;color:#183e45;margin-top:2px}
+.med{background:#fff;border:1px solid var(--line);border-left:3px solid #8ac8cd;border-radius:9px;padding:13px 14px;margin:8px 0}
+.medhead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}.medname{font-size:16px;font-weight:750;color:#123d44}
+.meta{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 9px}
+.pill{padding:3px 7px;border-radius:5px;background:#f2f6f6;border:1px solid #e3ebec;font-size:10.5px;font-weight:650;color:#52696e}
+.ok{background:var(--green-soft);color:#146c4e;border-color:#d4ece1}.soon{background:var(--amber-soft);color:#9b5b0f;border-color:#f2dfbd}.late{background:var(--red-soft);color:#a43d3d;border-color:#f0d2d2}.ordered{background:var(--primary-soft);color:#08717c;border-color:#cfe9eb}
+.history{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);overflow:auto}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px;border-bottom:1px solid #edf1f2;font-size:11.5px}th{color:#5f7479;font-weight:700;background:#fafcfc}
+.login{max-width:390px;margin:70px auto;padding:24px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#eef3f4;padding:3px;border-radius:8px;margin:16px 0}
+.auth-tab{background:transparent;color:var(--muted);border:0}.auth-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px #102a2f14}
+.regonly{display:none}.regmode .regonly{display:block}.msg{min-height:18px;margin-top:8px;color:var(--red);font-size:12px}
+.remember{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:12px;font-weight:600;color:#52676c;text-transform:none;letter-spacing:0}.remember input{width:auto;margin:0}
+.guest-sep{text-align:center;margin:11px;color:var(--muted);font-size:11px}.guest-banner{background:#fffaf0;border:1px solid #eadfbf;color:#75551c;border-radius:8px;padding:8px 11px;margin:10px 0;font-size:12px}.guest-btn{width:100%;background:#f5f7f7;color:#496268;border-color:var(--line)}
+.profilebar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.profilebar select{width:auto;min-width:135px}
+.archive-fab{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:20;writing-mode:vertical-rl;padding:11px 7px;border-radius:9px 0 0 9px;box-shadow:0 3px 12px #102a2f18}
+.archive-fab .count{background:#fff;color:#52656a;border-radius:999px;padding:2px 5px;margin-top:5px}.archive-card{border:1px solid var(--line);border-radius:8px;padding:11px;margin:8px 0}
+dialog{border:0;border-radius:11px;max-width:540px;width:calc(100% - 30px);padding:0;box-shadow:0 20px 60px #0003}dialog::backdrop{background:#15373c66}.dlg{padding:17px}
+#app>.top:first-child{padding-bottom:11px;border-bottom:1px solid var(--line)}
+#app>.top:first-child h1{margin-bottom:1px!important}
+#app>.top:first-child h1::first-letter{font-size:.9em}
+#meds.card{padding:9px;background:#fbfdfd}
 @media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.span2,.span4{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.medhead{display:block}}
-@media(max-width:700px){.archive-fab{position:static;transform:none;writing-mode:horizontal-tb;border-radius:10px;margin:12px 0;width:100%}}
-@media(max-width:520px){.grid,.stats{grid-template-columns:1fr}.span2,.span4{grid-column:auto}.actions button,.actions a{flex:1;text-align:center}}
+@media(max-width:700px){.archive-fab{position:static;transform:none;writing-mode:horizontal-tb;border-radius:7px;margin:9px 0;width:100%}}
+@media(max-width:520px){body{font-size:13px}.wrap{padding:13px 10px 35px}.grid,.stats{grid-template-columns:1fr}.span2,.span4{grid-column:auto}.actions button,.actions a{flex:1;text-align:center}.login{margin:25px auto}.med{padding:11px}.medname{font-size:15px}}
+
+.toolbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:10px 0}.toolbar .search{flex:1;min-width:190px}
+.stockbar{width:100%;height:5px;background:#edf2f2;border-radius:99px;overflow:hidden;margin-top:5px}.stockbar>i{display:block;height:100%;background:var(--primary);border-radius:99px}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.55px;color:#6a8085;font-weight:800;margin:15px 2px 6px}
+.status-paused{background:#fff6e8;color:#956019;border-color:#efdfbf}.status-ended{background:#f1f5f9;color:#64748b;border-color:#dfe6e8}
+.compact-select{width:auto;min-width:145px}
+@media(max-width:620px){.toolbar>*{width:100%!important}}
 </style></head>
 <body><div class="wrap">
 <section id="auth" class="login card">
-<div style="font-size:42px;text-align:center">💊</div><h1 style="text-align:center;margin-bottom:4px">Moji lijekovi</h1>
+<div style="font-size:25px;text-align:center;margin-bottom:7px">⚕</div><h1 style="text-align:center;margin-bottom:4px">Moji lijekovi</h1>
 <p id="authSub" class="muted" style="text-align:center">Prijavi se za pristup svojoj evidenciji.</p>
 <div class="auth-tabs"><button id="tLogin" class="auth-tab active">Prijava</button><button id="tReg" class="auth-tab">Registracija</button></div>
 <form id="authForm" autocomplete="on">
 <label>Email</label><input id="email" name="username" type="email" autocomplete="username" required>
-<label style="margin-top:10px">Lozinka</label><input id="pass" name="password" type="password" autocomplete="current-password" minlength="6" required>
+<label style="margin-top:10px">Lozinka</label><input id="pass" name="password" type="password" autocomplete="current-password" minlength="6" required><div id="rememberWrap">
+<label class="remember"><input id="rememberMe" type="checkbox"> Zapamti me</label>
+
+</div>
 <div class="regonly"><label style="margin-top:10px">Ponovi lozinku</label><input id="pass2" type="password" autocomplete="new-password"></div>
 <button id="authBtn" class="primary" style="width:100%;margin-top:14px">🔐 Prijavi se</button><div id="authMsg" class="msg"></div>
 </form><div class="guest-sep">— ili —</div><button id="guestBtn" class="guest-btn" type="button">👤 Nastavi kao gost</button><div class="muted" style="font-size:12px;text-align:center;margin-top:8px">Podaci gosta brišu se osvježavanjem ili zatvaranjem stranice.</div></section>
 
 <main id="app" class="hidden">
-<div class="top"><div><h1 style="margin-bottom:3px">💊 Moji lijekovi</h1><div class="muted">Terapija, zaliha i povijest podizanja</div></div>
+<div class="top"><div><h1 style="margin-bottom:3px">💊 Moji lijekovi</h1><div class="muted" style="font-size:12px">Evidencija terapije, zalihe i podizanja lijekova</div></div>
 <div class="profilebar"><span id="who" class="muted"></span><button id="logout" class="ghost">Odjava</button></div></div>
 
 <div id="guestBanner" class="guest-banner hidden">👤 <b>Gostujući način</b> — ništa se ne sprema. Osvježavanje ili zatvaranje stranice briše sve gostujuće podatke.</div><div class="top" style="margin-top:14px"><div class="profilebar"><strong>Profil:</strong><select id="profile"></select><button id="addProfile" class="ghost">+ Član obitelji</button></div><button id="showAdd" class="primary">+ Dodaj lijek</button></div>
-<div class="stats"><div class="stat"><div class="muted">Aktivni lijekovi</div><div id="sTotal" class="num">0</div></div><div class="stat"><div class="muted">Nazvati ≤ 7 dana</div><div id="sSoon" class="num">0</div></div><div class="stat"><div class="muted">Rok prošao / danas</div><div id="sLate" class="num">0</div></div><div class="stat"><div class="muted">Recept naručen</div><div id="sOrdered" class="num">0</div></div></div>
+<div class="toolbar"><input id="searchMed" class="search" type="search" placeholder="Pretraži lijek, liječnika, razlog..."><select id="therapyFilter" class="compact-select"><option value="all">Sve terapije</option><option value="Aktivna">Aktivne</option><option value="Pauzirana">Pauzirane</option><option value="Završena">Završene</option></select><button id="exportPdf" class="ghost">PDF / ispis</button><button id="exportCsv" class="ghost">CSV</button><button id="exportJson" class="ghost">Backup JSON</button></div>
+<div class="stats"><div class="stat"><div class="muted">Aktivni lijekovi</div><div id="sTotal" class="num">0</div></div><div class="stat"><div class="muted">Nazvati ≤ 7 dana</div><div id="sSoon" class="num">0</div></div><div class="stat"><div class="muted">Rok prošao / danas</div><div id="sLate" class="num">0</div></div><div class="stat"><div class="muted">Recept u postupku</div><div id="sOrdered" class="num">0</div></div></div>
 <div id="meds" class="card"></div>
 </main>
 
@@ -48,13 +99,20 @@ dialog{border:0;border-radius:18px;max-width:560px;width:calc(100% - 30px);paddi
 <dialog id="medDlg"><div class="dlg"><div class="top"><h2 id="medDlgTitle">Dodaj lijek</h2><button onclick="medDlg.close()" class="ghost">✕</button></div>
 <form id="medForm" class="grid">
 <input id="editId" type="hidden">
-<div class="span2"><label>Naziv lijeka</label><input id="name" required placeholder="npr. Adenuric 80 mg"></div>
+<div class="span2"><label>Naziv lijeka</label><input id="name" required placeholder="npr. Adenuric"></div>
+<div><label>Jačina</label><input id="strength" placeholder="npr. 80 mg"></div>
+<div><label>Oblik</label><select id="form"><option value="">—</option><option>Tableta</option><option>Kapsula</option><option>Sirup</option><option>Kapi</option><option>Sprej</option><option>Krema / mast</option><option>Injekcija</option><option>Drugo</option></select></div>
 <div><label>Broj tableta / količina</label><input id="qty" type="number" min="0" step="0.01" placeholder="npr. 30"></div>
 <div><label>Doza dnevno</label><input id="dose" type="number" min="0.01" step="0.01" placeholder="npr. 1"></div>
 <div><label>Trajanje terapije (dana)</label><input id="days" type="number" min="1" value="30" required></div>
 <div><label>Nazvati ranije (dana)</label><input id="lead" type="number" min="0" value="5" required></div>
 <div><label>Prvo/zadnje podizanje</label><input id="pickup" type="date" required></div>
 <div><label>Profil</label><select id="medProfile"></select></div>
+<div><label>Status terapije</label><select id="therapyStatus"><option>Aktivna</option><option>Pauzirana</option><option>Završena</option></select></div>
+<div class="span2"><label>Liječnik / specijalist</label><input id="doctor" placeholder="npr. obiteljski liječnik, nefrolog"></div>
+<div class="span2"><label>Razlog terapije</label><input id="reason" placeholder="npr. urat, tlak..."></div>
+<div class="span2"><label>Režim uzimanja</label><input id="regimen" placeholder="npr. 1 tableta ujutro / svaki drugi dan"></div>
+<div class="span2"><label>Status recepta</label><select id="rxStatus"><option value="treba">Treba naručiti</option><option value="narucen">Recept naručen</option><option value="spreman">Recept spreman</option><option value="podignut">Lijek podignut</option></select></div>
 <div class="span4"><label>Bilješka</label><textarea id="note" placeholder="npr. uzimati navečer, kontrola..."></textarea></div>
 <div class="span4 muted" id="autoDays"></div>
 <div class="span4 actions"><button class="primary" type="submit">Spremi</button><button type="button" class="ghost" onclick="medDlg.close()">Odustani</button></div>
@@ -67,16 +125,20 @@ dialog{border:0;border-radius:18px;max-width:560px;width:calc(100% - 30px);paddi
 
 <script>
 const sb=window.supabase.createClient('https://puqptcgghjekryfcrdsu.supabase.co','sb_publishable_eIpUvEX6CgKwDIw0-V--OQ_x3TeKA04');
-const $=id=>document.getElementById(id); let user=null,meds=[],profiles=[],pickups=[],mode='login',selectedProfile='all',guest=false,gMed=1,gProf=2,gPick=1;
+const $=id=>document.getElementById(id); let user=null,meds=[],profiles=[],pickups=[],mode='login',selectedProfile='all',guest=false,gMed=1,gProf=2,gPick=1,searchTerm='',therapyFilter='all';
 const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const D=s=>{let[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}, add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+Number(n));return x};
 const fmt=d=>String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const compact=d=>iso(d).replaceAll('-',''); const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const diff=(a,b)=>Math.ceil((a-b)/86400000);
-function setMode(m){mode=m;let r=m==='register';$('auth').classList.toggle('regmode',r);$('tLogin').classList.toggle('active',!r);$('tReg').classList.toggle('active',r);$('pass').autocomplete=r?'new-password':'current-password';$('pass2').required=r;$('authBtn').textContent=r?'👤 Kreiraj račun':'🔐 Prijavi se';$('authSub').textContent=r?'Napravi svoj račun.':'Prijavi se za pristup svojoj evidenciji.';$('authMsg').textContent=''}
+function setMode(m){mode=m;let r=m==='register';$('auth').classList.toggle('regmode',r);$('tLogin').classList.toggle('active',!r);$('tReg').classList.toggle('active',r);$('pass').autocomplete=r?'new-password':'current-password';$('pass2').required=r;$('rememberWrap').classList.toggle('hidden',r);$('authBtn').textContent=r?'👤 Kreiraj račun':'🔐 Prijavi se';$('authSub').textContent=r?'Napravi svoj račun.':'Prijavi se za pristup svojoj evidenciji.';$('authMsg').textContent=''}
+$('rememberMe').onchange=()=>{if(!$('rememberMe').checked){localStorage.removeItem('mojiLijekoviEmail');localStorage.removeItem('mojiLijekoviRememberMe')}localStorage.removeItem('mojiLijekoviPassword')};
 $('tLogin').onclick=()=>setMode('login');$('tReg').onclick=()=>setMode('register');
-$('authForm').onsubmit=async e=>{e.preventDefault();let email=$('email').value.trim(),password=$('pass').value,msg=$('authMsg');msg.textContent='';if(mode==='register'){if(password!==$('pass2').value){msg.textContent='Lozinke se ne podudaraju.';return}let {data,error}=await sb.auth.signUp({email,password});if(error){msg.textContent=error.message;return}if(data.session){user=data.user;await enter()}else msg.textContent='Račun je napravljen. Potvrdi email pa se prijavi.'}else{let {data,error}=await sb.auth.signInWithPassword({email,password});if(error){msg.textContent='Pogrešan email ili lozinka.';return}user=data.user;await enter()}};
+$('authForm').onsubmit=async e=>{e.preventDefault();let email=$('email').value.trim(),password=$('pass').value,msg=$('authMsg');msg.textContent='';if(mode==='register'){if(password!==$('pass2').value){msg.textContent='Lozinke se ne podudaraju.';return}let {data,error}=await sb.auth.signUp({email,password});if(error){msg.textContent=error.message;return}if(data.session){user=data.user;await enter()}else msg.textContent='Račun je napravljen. Potvrdi email pa se prijavi.'}else{let {data,error}=await sb.auth.signInWithPassword({email,password});if(error){msg.textContent='Pogrešan email ili lozinka.';return}user=data.user;
+if($('rememberMe').checked){localStorage.setItem('mojiLijekoviRememberMe','1');localStorage.setItem('mojiLijekoviEmail',email)}else{localStorage.removeItem('mojiLijekoviRememberMe');localStorage.removeItem('mojiLijekoviEmail')}
+
+await enter()}};
 $('guestBtn').onclick=()=>{guest=true;user={id:'guest',email:'Gost'};meds=[];pickups=[];profiles=[{id:1,user_id:'guest',naziv:'Ja'}];gMed=1;gProf=2;gPick=1;selectedProfile='all';$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('archiveBtn').classList.remove('hidden');$('guestBanner').classList.remove('hidden');$('who').textContent='Gost';renderProfiles();render()};
 $('logout').onclick=async()=>{if(!guest)await sb.auth.signOut();guest=false;user=null;meds=[];profiles=[];pickups=[];$('guestBanner').classList.add('hidden');$('app').classList.add('hidden');$('archiveBtn').classList.add('hidden');$('auth').classList.remove('hidden')};
 async function enter(){guest=false;$('guestBanner').classList.add('hidden');$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('archiveBtn').classList.remove('hidden');$('who').textContent=user.email;await ensureProfile();await loadAll()}
@@ -87,11 +149,11 @@ $('profile').onchange=e=>{selectedProfile=e.target.value;render()};
 $('addProfile').onclick=async()=>{let naziv=prompt('Ime profila / člana obitelji:');if(!naziv?.trim())return;if(guest){profiles.push({id:gProf++,user_id:'guest',naziv:naziv.trim()});renderProfiles();render();return}let {error}=await sb.from('profili').insert({user_id:user.id,naziv:naziv.trim()});if(error)alert(error.message);else{await ensureProfile();renderProfiles();render()}};
 function calcDays(){let q=+$('qty').value,d=+$('dose').value;if(q>0&&d>0){let n=Math.floor(q/d);$('days').value=n;$('autoDays').textContent=`Automatski izračun: ${q} ÷ ${d} = ${n} dana terapije.`}else $('autoDays').textContent=''}
 $('qty').oninput=calcDays;$('dose').oninput=calcDays;
-$('showAdd').onclick=()=>{medForm.reset();$('editId').value='';$('days').value=30;$('lead').value=5;$('pickup').value=today();$('medDlgTitle').textContent='Dodaj lijek';renderProfiles();medDlg.showModal()};
+$('showAdd').onclick=()=>{medForm.reset();$('editId').value='';$('days').value=30;$('lead').value=5;$('pickup').value=today();$('medDlgTitle').textContent='Dodaj lijek';$('therapyStatus').value='Aktivna';$('rxStatus').value='podignut';renderProfiles();medDlg.showModal()};
 $('medForm').onsubmit=async e=>{e.preventDefault();
  let id=$('editId').value;
  let noviDatum=$('pickup').value;
- let row={naziv:$('name').value.trim(),kolicina_pakiranja:$('qty').value||null,doza_dnevno:$('dose').value||null,trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value,biljeska:$('note').value.trim()||null,profil_id:+$('medProfile').value};
+ let row={naziv:$('name').value.trim(),jacina:$('strength').value.trim()||null,oblik:$('form').value||null,kolicina_pakiranja:$('qty').value||null,doza_dnevno:$('dose').value||null,trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value,biljeska:$('note').value.trim()||null,profil_id:+$('medProfile').value,terapija_status:$('therapyStatus').value,lijecnik:$('doctor').value.trim()||null,razlog:$('reason').value.trim()||null,rezim:$('regimen').value.trim()||null,recept_status:$('rxStatus').value,recept_narucen:['narucen','spreman'].includes($('rxStatus').value)};
  if(guest){if(id){id=+id;let m=meds.find(x=>x.id===id),z=medPickups(id)[0];Object.assign(m,row,{datum_podizanja:noviDatum});if(z)z.datum=noviDatum;else pickups.push({id:gPick++,user_id:'guest',lijek_id:id,datum:noviDatum,kolicina:row.kolicina_pakiranja,biljeska:null})}else{let m={...row,id:gMed++,user_id:'guest',datum_podizanja:noviDatum,recept_narucen:false,aktivan:true};meds.push(m);pickups.push({id:gPick++,user_id:'guest',lijek_id:m.id,datum:noviDatum,kolicina:row.kolicina_pakiranja,biljeska:null})}medDlg.close();render();return}
  if(id){
    id=+id;
@@ -119,10 +181,11 @@ $('medForm').onsubmit=async e=>{e.preventDefault();
  }
  medDlg.close();await loadAll()
 };
-function editMed(id){let m=meds.find(x=>x.id===id);if(!m)return;$('editId').value=id;$('name').value=m.naziv;$('qty').value=m.kolicina_pakiranja??'';$('dose').value=m.doza_dnevno??'';$('days').value=m.trajanje_dana;$('lead').value=m.nazvati_ranije_dana;$('pickup').value=medPickups(id)[0]?.datum||m.datum_podizanja;$('note').value=m.biljeska??'';renderProfiles();$('medProfile').value=m.profil_id;$('medDlgTitle').textContent='Uredi lijek';calcDays();medDlg.showModal()}
+function editMed(id){let m=meds.find(x=>x.id===id);if(!m)return;$('editId').value=id;$('name').value=m.naziv;$('strength').value=m.jacina??'';$('form').value=m.oblik??'';$('qty').value=m.kolicina_pakiranja??'';$('dose').value=m.doza_dnevno??'';$('days').value=m.trajanje_dana;$('lead').value=m.nazvati_ranije_dana;$('pickup').value=medPickups(id)[0]?.datum||m.datum_podizanja;$('note').value=m.biljeska??'';$('therapyStatus').value=m.terapija_status||'Aktivna';$('doctor').value=m.lijecnik??'';$('reason').value=m.razlog??'';$('regimen').value=m.rezim??'';$('rxStatus').value=m.recept_status||(m.recept_narucen?'narucen':'treba');renderProfiles();$('medProfile').value=m.profil_id;$('medDlgTitle').textContent='Uredi lijek';calcDays();medDlg.showModal()}
 function newPickup(id){let m=meds.find(x=>x.id===id);$('pickupMedId').value=id;$('newPickupDate').value=today();$('newPickupQty').value=m?.kolicina_pakiranja??'';$('pickupNote').value='';pickupDlg.showModal()}
-$('pickupForm').onsubmit=async e=>{e.preventDefault();let id=+$('pickupMedId').value,date=$('newPickupDate').value,qty=$('newPickupQty').value||null;if(guest){pickups.push({id:gPick++,user_id:'guest',lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});let m=meds.find(x=>x.id===id);if(m){m.datum_podizanja=date;m.recept_narucen=false;if(qty)m.kolicina_pakiranja=qty}pickupDlg.close();render();return}let {error}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});if(error)return alert(error.message);let up={datum_podizanja:date,recept_narucen:false};if(qty)up.kolicina_pakiranja=qty;await sb.from('lijekovi').update(up).eq('id',id);pickupDlg.close();await loadAll()};
-async function toggleOrdered(id,val){if(guest){let m=meds.find(x=>x.id===id);if(m)m.recept_narucen=val;render();return}let {error}=await sb.from('lijekovi').update({recept_narucen:val}).eq('id',id);if(error)alert(error.message);else loadAll()}
+$('pickupForm').onsubmit=async e=>{e.preventDefault();let id=+$('pickupMedId').value,date=$('newPickupDate').value,qty=$('newPickupQty').value||null;if(guest){pickups.push({id:gPick++,user_id:'guest',lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});let m=meds.find(x=>x.id===id);if(m){m.datum_podizanja=date;m.recept_narucen=false;m.recept_status='podignut';if(qty)m.kolicina_pakiranja=qty}pickupDlg.close();render();return}let {error}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});if(error)return alert(error.message);let up={datum_podizanja:date,recept_narucen:false,recept_status:'podignut'};if(qty)up.kolicina_pakiranja=qty;await sb.from('lijekovi').update(up).eq('id',id);pickupDlg.close();await loadAll()};
+async function setRxStatus(id,status){let patch={recept_status:status,recept_narucen:['narucen','spreman'].includes(status)};if(guest){let m=meds.find(x=>x.id===id);if(m)Object.assign(m,patch);render();return}let {error}=await sb.from('lijekovi').update(patch).eq('id',id);if(error)alert(error.message);else loadAll()}
+function cycleRx(id){let m=meds.find(x=>x.id===id),cur=m?.recept_status||(m?.recept_narucen?'narucen':'treba'),seq=['treba','narucen','spreman'];setRxStatus(id,seq[(seq.indexOf(cur)+1)%seq.length])}
 async function archiveMed(id){if(!confirm('Arhivirati lijek? Povijest ostaje sačuvana.'))return;if(guest){let m=meds.find(x=>x.id===id);if(m)m.aktivan=false;render();return}await sb.from('lijekovi').update({aktivan:false}).eq('id',id);loadAll()}
 async function deletePickup(id){if(!confirm('Obrisati ovaj zapis podizanja?'))return;if(guest){pickups=pickups.filter(p=>p.id!==id);render();return}await sb.from('podizanja').delete().eq('id',id);loadAll()}
 function hist(id){let el=$('h'+id);el.classList.toggle('hidden')}
@@ -133,7 +196,46 @@ function calUrl(m,call){let next=add(call,1);return 'https://calendar.google.com
 $('archiveBtn').onclick=()=>{renderArchive();archiveDlg.showModal()};
 async function restoreMed(id){if(guest){let m=meds.find(x=>x.id===id);if(m)m.aktivan=true;render();renderArchive();return}let {error}=await sb.from('lijekovi').update({aktivan:true}).eq('id',id);if(error)return alert(error.message);await loadAll();renderArchive()}
 async function permanentlyDelete(id){let m=meds.find(x=>x.id===id);if(!m)return;if(!confirm('TRAJNO obrisati "'+m.naziv+'" i cijelu njegovu povijest podizanja? Ovo se ne može vratiti.'))return;if(guest){meds=meds.filter(x=>x.id!==id);pickups=pickups.filter(x=>x.lijek_id!==id);render();renderArchive();return}let {error}=await sb.from('lijekovi').delete().eq('id',id);if(error)return alert(error.message);await loadAll();renderArchive()}
+
+$('searchMed').oninput=e=>{searchTerm=e.target.value.toLowerCase().trim();render()};
+$('therapyFilter').onchange=e=>{therapyFilter=e.target.value;render()};
+function visibleMeds(){return meds.filter(m=>m.aktivan!==false&&(selectedProfile==='all'||String(m.profil_id)===String(selectedProfile))&&(therapyFilter==='all'||(m.terapija_status||'Aktivna')===therapyFilter)&&(!searchTerm||[m.naziv,m.jacina,m.oblik,m.lijecnik,m.razlog,m.rezim,m.biljeska].some(v=>String(v||'').toLowerCase().includes(searchTerm))))}
+function rxLabel(s){return ({treba:'Treba naručiti',narucen:'Recept naručen',spreman:'Recept spreman',podignut:'Lijek podignut'})[s]||'Treba naručiti'}
+function downloadFile(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},100)}
+$('exportJson').onclick=()=>downloadFile('moji-lijekovi-backup-'+today()+'.json',JSON.stringify({exportirano:new Date().toISOString(),profili:profiles,lijekovi:meds,podizanja:pickups},null,2),'application/json');
+$('exportCsv').onclick=()=>{let rows=[['Profil','Lijek','Jačina','Oblik','Status terapije','Liječnik','Razlog','Režim','Zadnje podizanje','Status recepta','Bilješka']];visibleMeds().forEach(m=>rows.push([profileName(m.profil_id),m.naziv,m.jacina||'',m.oblik||'',m.terapija_status||'Aktivna',m.lijecnik||'',m.razlog||'',m.rezim||'',medPickups(m.id)[0]?.datum||m.datum_podizanja,rxLabel(m.recept_status||(m.recept_narucen?'narucen':'treba')),m.biljeska||'']));let csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');downloadFile('terapija-'+today()+'.csv',csv,'text/csv;charset=utf-8')};
+$('exportPdf').onclick=()=>{let list=visibleMeds(),w=window.open('','_blank');let rows=list.map(m=>{let last=medPickups(m.id)[0]?.datum||m.datum_podizanja;return `<tr><td>${esc(profileName(m.profil_id))}</td><td><b>${esc(m.naziv)}</b>${m.jacina?' '+esc(m.jacina):''}${m.oblik?'<br><small>'+esc(m.oblik)+'</small>':''}</td><td>${esc(m.rezim||((m.doza_dnevno||'—')+'/dan'))}</td><td>${esc(m.lijecnik||'—')}</td><td>${esc(m.razlog||'—')}</td><td>${fmt(D(last))}</td><td>${esc(m.biljeska||'')}</td></tr>`}).join('');w.document.write(`<!doctype html><meta charset="utf-8"><title>Terapija</title><style>body{font:13px Arial;color:#17333a;margin:30px}h1{font-size:22px}p{color:#667b80}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:8px;border-bottom:1px solid #dce7e8;text-align:left;vertical-align:top}th{background:#f4f8f8;font-size:11px}small{color:#667b80}@media print{button{display:none}}</style><h1>Popis terapije</h1><p>Datum ispisa: ${fmt(D(today()))}</p><table><thead><tr><th>Profil</th><th>Lijek</th><th>Uzimanje</th><th>Liječnik</th><th>Razlog</th><th>Zadnje podizanje</th><th>Napomena</th></tr></thead><tbody>${rows}</tbody></table><p><small>Dokument je osobna evidencija i nije zamjena za službenu medicinsku dokumentaciju.</small></p><button onclick="print()">Ispiši / Spremi kao PDF</button>`);w.document.close();setTimeout(()=>w.print(),300)};
 function renderArchive(){let a=meds.filter(m=>m.aktivan===false&&(selectedProfile==='all'||String(m.profil_id)===String(selectedProfile)));$('archiveCount').textContent=meds.filter(m=>m.aktivan===false).length;$('archiveList').innerHTML=a.length?a.map(m=>{let ps=medPickups(m.id),last=ps[0]?.datum||m.datum_podizanja;return `<div class="archive-card"><div class="medhead"><div><div class="medname">${esc(m.naziv)}</div><div class="meta"><span class="pill">👤 ${esc(profileName(m.profil_id))}</span><span class="pill">Zadnje podizanje ${fmt(D(last))}</span><span class="pill">📜 ${ps.length} zapisa</span></div></div></div>${m.biljeska?`<p class="muted">📝 ${esc(m.biljeska)}</p>`:''}<div class="actions"><button class="green" onclick="restoreMed(${m.id})">↩ Vrati u aktivne</button><button class="ghost" onclick="archiveDlg.close();setTimeout(()=>{hist(${m.id})},0)" disabled>📜 Povijest: ${ps.length}</button><button class="danger" onclick="permanentlyDelete(${m.id})">🗑 Trajno obriši</button></div>${ps.length?`<div class="history"><table><thead><tr><th>Datum</th><th>Količina</th><th>Bilješka</th></tr></thead><tbody>${ps.map(p=>`<tr><td>${fmt(D(p.datum))}</td><td>${p.kolicina??'—'}</td><td>${esc(p.biljeska||'')}</td></tr>`).join('')}</tbody></table></div>`:''}</div>`}).join(''):'<div class="muted" style="text-align:center;padding:30px">Arhiva je prazna.</div>'}
-function render(){let list=meds.filter(m=>m.aktivan!==false&&(selectedProfile==='all'||String(m.profil_id)===String(selectedProfile))),now=D(today()),soon=0,late=0,ord=0;let html=list.map(m=>{let ps=medPickups(m.id),last=ps[0]?.datum||m.datum_podizanja,end=add(D(last),m.trajanje_dana),call=add(end,-m.nazvati_ranije_dana),d=diff(call,now),status,cl;if(m.recept_narucen){status='Recept naručen';cl='ordered';ord++}else if(d<=0){status=d===0?'Nazvati danas':'Rok prošao '+Math.abs(d)+' d.';cl='late';late++}else if(d<=7){status='Nazvati za '+d+' d.';cl='soon';soon++}else{status='U redu · '+d+' d.';cl='ok'}let avg=averageGap(ps),stock=m.kolicina_pakiranja&&m.doza_dnevno?Math.max(0,Math.ceil((D(last).getTime()+m.trajanje_dana*86400000-now.getTime())/86400000*m.doza_dnevno)):null;let hrows=ps.map((p,i)=>`<tr><td>${fmt(D(p.datum))}</td><td>${p.kolicina??'—'}</td><td>${esc(p.biljeska||'')}</td><td>${i?`<button class="danger" onclick="deletePickup(${p.id})">Obriši</button>`:''}</td></tr>`).join('');return `<div class="med"><div class="medhead"><div><div class="medname">${esc(m.naziv)}</div><div class="meta"><span class="pill">👤 ${esc(profileName(m.profil_id))}</span><span class="pill ${cl}">${status}</span><span class="pill">Podignut ${fmt(D(last))}</span><span class="pill">Kraj ${fmt(end)}</span>${stock!==null?`<span class="pill">📦 ~${stock} preostalo</span>`:''}</div></div></div>${m.biljeska?`<p class="muted">📝 ${esc(m.biljeska)}</p>`:''}<div class="muted" style="margin-bottom:10px">${m.kolicina_pakiranja?`Pakiranje: <b>${m.kolicina_pakiranja}</b> · `:''}${m.doza_dnevno?`Doza: <b>${m.doza_dnevno}/dan</b> · `:''}Terapija: <b>${m.trajanje_dana} dana</b>${avg?` · Prosjek podizanja: <b>${avg.toFixed(1)} dana</b>`:''}</div><div class="actions"><button class="primary" onclick="newPickup(${m.id})">✓ Podignut</button><button class="${m.recept_narucen?'ghost':'purple'}" onclick="toggleOrdered(${m.id},${!m.recept_narucen})">${m.recept_narucen?'↩ Poništi naručeno':'☎ Recept naručen'}</button><a class="btn calendar" target="_blank" href="${calUrl(m,call)}">📅 Kalendar</a><button class="ghost" onclick="hist(${m.id})">📜 Povijest (${ps.length})</button><button class="ghost" onclick="editMed(${m.id})">✏️ Uredi</button><button class="danger" onclick="archiveMed(${m.id})">Arhiviraj</button></div><div id="h${m.id}" class="history hidden"><h3>Povijest podizanja</h3>${ps.length?`<table><thead><tr><th>Datum</th><th>Količina</th><th>Bilješka</th><th></th></tr></thead><tbody>${hrows}</tbody></table>`:'Nema zapisa.'}</div></div>`}).join('');$('archiveCount').textContent=meds.filter(m=>m.aktivan===false).length;$('sTotal').textContent=list.length;$('sSoon').textContent=soon;$('sLate').textContent=late;$('sOrdered').textContent=ord;$('meds').innerHTML=html||'<div class="muted" style="text-align:center;padding:30px">Nema aktivnih lijekova za ovaj profil.</div>'}
-(async()=>{let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;await enter()}})();
+function render(){
+ let list=visibleMeds(),now=D(today()),soon=0,late=0,ord=0;
+ list.sort((a,b)=>{let pa=(a.terapija_status||'Aktivna')==='Aktivna'?0:1,pb=(b.terapija_status||'Aktivna')==='Aktivna'?0:1;if(pa!==pb)return pa-pb;let la=medPickups(a.id)[0]?.datum||a.datum_podizanja,lb=medPickups(b.id)[0]?.datum||b.datum_podizanja;return diff(add(D(la),a.trajanje_dana-a.nazvati_ranije_dana),now)-diff(add(D(lb),b.trajanje_dana-b.nazvati_ranije_dana),now)});
+ let html=list.map(m=>{
+   let ps=medPickups(m.id),last=ps[0]?.datum||m.datum_podizanja,end=add(D(last),m.trajanje_dana),call=add(end,-m.nazvati_ranije_dana),d=diff(call,now),therapy=m.terapija_status||'Aktivna',rs=m.recept_status||(m.recept_narucen?'narucen':'treba'),status,cl;
+   if(therapy==='Pauzirana'){status='Terapija pauzirana';cl='status-paused'}
+   else if(therapy==='Završena'){status='Terapija završena';cl='status-ended'}
+   else if(rs==='narucen'){status='Recept naručen';cl='ordered';ord++}
+   else if(rs==='spreman'){status='Recept spreman';cl='ordered';ord++}
+   else if(d<=0){status=d===0?'Nazvati danas':'Rok prošao '+Math.abs(d)+' d.';cl='late';late++}
+   else if(d<=7){status='Nazvati za '+d+' d.';cl='soon';soon++}
+   else{status='U redu · '+d+' d.';cl='ok'}
+   let avg=averageGap(ps),daysLeft=Math.max(0,Math.ceil((end-now)/86400000)),stock=m.kolicina_pakiranja&&m.doza_dnevno?Math.max(0,Math.ceil(daysLeft*m.doza_dnevno)):null,pct=Math.max(0,Math.min(100,(daysLeft/Math.max(1,m.trajanje_dana))*100));
+   let hrows=ps.map((p,i)=>`<tr><td>${fmt(D(p.datum))}</td><td>${p.kolicina??'—'}</td><td>${esc(p.biljeska||'')}</td><td>${i?`<button class="danger" onclick="deletePickup(${p.id})">Obriši</button>`:''}</td></tr>`).join('');
+   return `<div class="med" id="med-${m.id}"><div class="medhead"><div><div class="medname">${esc(m.naziv)}${m.jacina?` <span class="muted">${esc(m.jacina)}</span>`:''}</div><div class="meta"><span class="pill">👤 ${esc(profileName(m.profil_id))}</span>${m.oblik?`<span class="pill">${esc(m.oblik)}</span>`:''}<span class="pill ${cl}">${status}</span>${m.razlog?`<span class="pill">${esc(m.razlog)}</span>`:''}</div></div></div>
+   <div class="muted" style="margin-bottom:8px">${m.rezim?`Uzimanje: <b>${esc(m.rezim)}</b> · `:''}${m.lijecnik?`Liječnik: <b>${esc(m.lijecnik)}</b> · `:''}Podignut: <b>${fmt(D(last))}</b> · kraj: <b>${fmt(end)}</b>${avg?` · prosjek podizanja: <b>${avg.toFixed(1)} dana</b>`:''}</div>
+   ${stock!==null?`<div class="muted" style="font-size:11px">Procijenjena zaliha: <b>~${stock}</b> · približno ${daysLeft} dana<div class="stockbar"><i style="width:${pct}%"></i></div></div>`:''}
+   ${m.biljeska?`<p class="muted">📝 ${esc(m.biljeska)}</p>`:''}
+   <div class="actions" style="margin-top:9px"><button class="primary" onclick="newPickup(${m.id})">✓ Podignut</button><button class="${rs==='treba'?'purple':'ghost'}" onclick="cycleRx(${m.id})">${rs==='treba'?'☎ Recept naručen':rs==='narucen'?'✓ Označi spreman':'↩ Vrati na treba naručiti'}</button><a class="btn calendar" target="_blank" href="${calUrl(m,call)}">📅 Kalendar</a><button class="ghost" onclick="hist(${m.id})">📜 Povijest (${ps.length})</button><button class="ghost" onclick="editMed(${m.id})">✏️ Uredi</button><button class="danger" onclick="archiveMed(${m.id})">Arhiviraj</button></div>
+   <div id="h${m.id}" class="history hidden"><h3>Povijest podizanja</h3>${ps.length?`<table><thead><tr><th>Datum</th><th>Količina</th><th>Bilješka</th><th></th></tr></thead><tbody>${hrows}</tbody></table>`:'Nema zapisa.'}</div></div>`
+ }).join('');
+ $('archiveCount').textContent=meds.filter(m=>m.aktivan===false).length;$('sTotal').textContent=list.filter(m=>(m.terapija_status||'Aktivna')==='Aktivna').length;$('sSoon').textContent=soon;$('sLate').textContent=late;$('sOrdered').textContent=ord;$('meds').innerHTML=html||'<div class="muted" style="text-align:center;padding:30px">Nema lijekova koji odgovaraju odabranom prikazu.</div>'
+}
+(async()=>{localStorage.removeItem('mojiLijekoviPassword');
+$('rememberMe').checked=localStorage.getItem('mojiLijekoviRememberMe')==='1';
+let savedEmail=localStorage.getItem('mojiLijekoviEmail');
+if($('rememberMe').checked&&savedEmail){$('email').value=savedEmail}
+
+let {data}=await sb.auth.getSession();
+if(data.session&&$('rememberMe').checked){user=data.session.user;await enter()}
+else if(data.session&&!$('rememberMe').checked){await sb.auth.signOut()}
+})();
 </script></div></body></html>
