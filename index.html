@@ -13,19 +13,27 @@ input{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:10px;f
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:11px;text-transform:uppercase;color:var(--muted)}
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750}.ok{background:#ecfdf3;color:var(--green)}.soon{background:#fff7ed;color:var(--amber)}.late{background:#fef2f2;color:var(--red)}
 .actions{display:flex;gap:6px;flex-wrap:wrap}.info{background:#eff6ff;border:1px solid #bfdbfe;padding:13px 15px;border-radius:12px;margin-bottom:18px;font-size:14px}.empty{text-align:center;padding:35px;color:var(--muted)}
-.login-overlay{max-width:430px;margin:70px auto}.login-card{text-align:left}.login-icon{font-size:42px;text-align:center;margin-bottom:8px}.login-title{text-align:center;margin:0 0 6px}.login-sub{text-align:center;color:var(--muted);margin:0 0 22px}.login-card input{margin-bottom:14px}.login-btn{width:100%;font-size:15px;padding:12px}.login-msg{min-height:20px;margin-top:12px;font-size:13px;color:var(--red)}.app-user{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:12px}.hidden{display:none!important}
+.login-overlay{max-width:430px;margin:70px auto}.login-card{text-align:left}.login-icon{font-size:42px;text-align:center;margin-bottom:8px}.login-title{text-align:center;margin:0 0 6px}.login-sub{text-align:center;color:var(--muted);margin:0 0 22px}.login-card input{margin-bottom:14px}.login-btn{width:100%;font-size:15px;padding:12px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f2f4f7;padding:4px;border-radius:12px;margin-bottom:20px}.auth-tab{background:transparent;color:var(--muted)}.auth-tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px #10182818}.register-only{display:none}.register-mode .register-only{display:block}.register-mode .login-only{display:none}.login-msg{min-height:20px;margin-top:12px;font-size:13px;color:var(--red)}.app-user{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:12px}.hidden{display:none!important}
 @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.stats{grid-template-columns:1fr}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:8px}td{border:0;padding:7px}}
 </style></head><body><div class="wrap">
 <div id="loginScreen" class="login-overlay">
   <div class="card login-card">
     <div class="login-icon">💊</div>
     <h1 class="login-title">Naručivanje lijekova</h1>
-    <p class="login-sub">Prijavi se za pristup svojoj evidenciji lijekova.</p>
+    <p id="authSubtitle" class="login-sub">Prijavi se za pristup svojoj evidenciji lijekova.</p>
+    <div class="auth-tabs">
+      <button id="tabLogin" class="auth-tab active" type="button">Prijava</button>
+      <button id="tabRegister" class="auth-tab" type="button">Registracija</button>
+    </div>
     <form id="loginForm" method="post" action="#" autocomplete="on">
       <label for="loginEmail">Email</label>
       <input id="loginEmail" name="username" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="tvoj@email.com">
       <label for="loginPassword">Lozinka</label>
-      <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+      <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••">
+      <div class="register-only">
+        <label for="confirmPassword">Ponovi lozinku</label>
+        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="••••••••">
+      </div>
       <button id="loginBtn" class="primary login-btn" type="submit">🔐 Prijavi se</button>
       <div id="loginMsg" class="login-msg"></div>
     </form>
@@ -68,7 +76,51 @@ function calUrl(m){let end=add(ld(m.datum_podizanja),m.trajanje_dana),call=add(e
 function render(){let t=new Date();t.setHours(0,0,0,0);let so=0,la=0;let rows=meds.map(m=>{let p=ld(m.datum_podizanja),e=add(p,m.trajanje_dana),c=add(e,-m.nazvati_ranije_dana),d=diff(c,t),cl='ok',st='';if(d<0){cl='late';st='Rok prošao '+Math.abs(d)+' d.';la++}else if(d===0){cl='late';st='Nazvati danas';la++}else if(d<=7){cl='soon';st='Za '+d+' d.';so++}else st='Za '+d+' d.';return `<tr><td><strong>${esc(m.naziv)}</strong></td><td>${fmt(p)}</td><td>${m.trajanje_dana} dana</td><td><strong>${fmt(c)}</strong></td><td>${fmt(e)}</td><td><span class="badge ${cl}">${st}</span></td><td><div class="actions"><a class="btn calendar" target="_blank" href="${calUrl(m)}">📅 Google kalendar</a><button class="ghost" onclick="again(${m.id})">✓ Podignut</button><button class="danger" onclick="del(${m.id})">Obriši</button></div></td></tr>`}).join('');$('total').textContent=meds.length;$('soon').textContent=so;$('late').textContent=la;$('list').innerHTML=meds.length?`<table><thead><tr><th>Lijek</th><th>Podignut</th><th>Trajanje</th><th>Nazvati</th><th>Kraj terapije</th><th>Status</th><th>Akcije</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">Još nema spremljenih lijekova.</div>'}
 function showLogin(){document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('appArea').classList.add('hidden')}
 function showApp(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appArea').classList.remove('hidden');document.getElementById('signedUser').textContent=user?.email||''}
-document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();let msg=document.getElementById('loginMsg'),btn=document.getElementById('loginBtn');msg.textContent='';btn.disabled=true;btn.textContent='Prijava...';let {data,error}=await sb.auth.signInWithPassword({email:document.getElementById('loginEmail').value.trim(),password:document.getElementById('loginPassword').value});btn.disabled=false;btn.textContent='🔐 Prijavi se';if(error){msg.textContent='Pogrešan email ili lozinka.';return}user=data.user;showApp();await load()});
+let authMode='login';
+function setAuthMode(mode){
+ authMode=mode;
+ const card=document.querySelector('.login-card');
+ const reg=mode==='register';
+ card.classList.toggle('register-mode',reg);
+ document.getElementById('tabLogin').classList.toggle('active',!reg);
+ document.getElementById('tabRegister').classList.toggle('active',reg);
+ document.getElementById('authSubtitle').textContent=reg?'Napravi svoj račun za sigurnu evidenciju lijekova.':'Prijavi se za pristup svojoj evidenciji lijekova.';
+ document.getElementById('loginBtn').textContent=reg?'👤 Kreiraj račun':'🔐 Prijavi se';
+ document.getElementById('loginPassword').autocomplete=reg?'new-password':'current-password';
+ document.getElementById('confirmPassword').required=reg;
+ document.getElementById('loginMsg').textContent='';
+}
+document.getElementById('tabLogin').addEventListener('click',()=>setAuthMode('login'));
+document.getElementById('tabRegister').addEventListener('click',()=>setAuthMode('register'));
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const msg=document.getElementById('loginMsg'),btn=document.getElementById('loginBtn');
+ const email=document.getElementById('loginEmail').value.trim();
+ const password=document.getElementById('loginPassword').value;
+ msg.textContent='';
+ if(authMode==='register'){
+   const confirm=document.getElementById('confirmPassword').value;
+   if(password!==confirm){msg.textContent='Lozinke se ne podudaraju.';return}
+   if(password.length<6){msg.textContent='Lozinka mora imati najmanje 6 znakova.';return}
+   btn.disabled=true;btn.textContent='Kreiranje računa...';
+   const {data,error}=await sb.auth.signUp({email,password});
+   btn.disabled=false;btn.textContent='👤 Kreiraj račun';
+   if(error){msg.textContent='Registracija nije uspjela: '+error.message;return}
+   if(data.session){
+     user=data.user;showApp();await load();
+   }else{
+     msg.style.color='var(--green)';
+     msg.textContent='Račun je napravljen. Provjeri email i potvrdi registraciju, zatim se prijavi.';
+     setTimeout(()=>{setAuthMode('login');msg.style.color='';},5000);
+   }
+   return;
+ }
+ btn.disabled=true;btn.textContent='Prijava...';
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ btn.disabled=false;btn.textContent='🔐 Prijavi se';
+ if(error){msg.textContent='Pogrešan email ili lozinka.';return}
+ user=data.user;showApp();await load();
+});
 document.getElementById('logoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();user=null;meds=[];showLogin()});
 $('pickup').value=fmt(new Date());$('pickupPicker').value=iso(new Date());
 $('pickup').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'.'+v.slice(2,4)+'.'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'.'+v.slice(2);e.target.value=v});
