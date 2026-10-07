@@ -30,47 +30,28 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 9px
 <button class="primary" type="submit">+ Dodaj</button></form>
 <p class="note">Datumi u evidenciji prikazuju se u obliku <strong>dd.mm.yyyy</strong>.</p></div>
 <div class="card"><h2 style="margin-top:0">Moji lijekovi</h2><div id="list"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const KEY='lijekovi_google_v2';let meds=JSON.parse(localStorage.getItem(KEY)||'[]');const $=x=>document.getElementById(x);
-$('pickup').value=fmt(new Date());$('pickupPicker').value=iso(new Date());
+const sb=window.supabase.createClient('https://puqptcgghjekryfcrdsu.supabase.co','sb_publishable_eIpUvEX6CgKwDIw0-V--OQ_x3TeKA04');
+const $=x=>document.getElementById(x);let meds=[],user=null;
 function ld(s){let[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function add(d,n){let x=new Date(d);x.setDate(x.getDate()+Number(n));return x}
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function compact(d){return iso(d).replaceAll('-','')}
 function fmt(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()}
 function diff(a,b){return Math.ceil((a-b)/86400000)}
-function parseInputDate(v){
- let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
- if(!a){alert('Datum podizanja upiši u obliku dd.mm.yyyy, npr. 06.10.2026.');throw new Error('Neispravan datum')}
- let d=+a[1],m=+a[2],y=+a[3],x=new Date(y,m-1,d);
- if(x.getFullYear()!=y||x.getMonth()!=m-1||x.getDate()!=d){alert('Datum podizanja nije valjan.');throw new Error('Neispravan datum')}
- return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')
-}
-function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function save(){localStorage.setItem(KEY,JSON.stringify(meds));render()}
-$('pickup').addEventListener('input',e=>{
- let v=e.target.value.replace(/\D/g,'').slice(0,8);
- if(v.length>4)v=v.slice(0,2)+'.'+v.slice(2,4)+'.'+v.slice(4);
- else if(v.length>2)v=v.slice(0,2)+'.'+v.slice(2);
- e.target.value=v;
-});
-$('calendarBtn').addEventListener('click',()=>{
- const picker=$('pickupPicker');
- let a=$('pickup').value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
- if(a) picker.value=a[3]+'-'+a[2]+'-'+a[1];
- if(typeof picker.showPicker==='function') picker.showPicker();
- else picker.click();
-});
-$('pickupPicker').addEventListener('change',e=>{
- if(e.target.value) $('pickup').value=fmt(ld(e.target.value));
-});
-$('pickup').addEventListener('blur',e=>{
- let a=e.target.value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
- if(a) $('pickupPicker').value=a[3]+'-'+a[2]+'-'+a[1];
-});
-$('form').onsubmit=e=>{e.preventDefault();meds.push({id:Date.now(),name:$('name').value.trim(),pickup:parseInputDate($('pickup').value),days:+$('days').value,lead:+$('lead').value});$('name').value='';save()}
-function del(id){if(confirm('Obrisati lijek?')){meds=meds.filter(m=>m.id!==id);save()}}
-function again(id){let m=meds.find(x=>x.id===id);let v=prompt('Datum novog podizanja (DD.MM.GGGG):',fmt(new Date()));if(v){let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);if(a){m.pickup=a[3]+'-'+a[2]+'-'+a[1];save()}else alert('Upiši datum u obliku DD.MM.GGGG, npr. 06.10.2026.')}}
-function calUrl(m){let end=add(ld(m.pickup),m.days),call=add(end,-m.lead),next=add(call,1);let title='Nazvati doktoricu – '+m.name;let details='Vrijeme je nazvati doktoricu radi nove terapije / recepta za '+m.name+'.%0A%0APosljednje podizanje: '+fmt(ld(m.pickup))+'.%0AOčekivani kraj terapije: '+fmt(end)+'.';return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+compact(call)+'%2F'+compact(next)+'&details='+details}
-function render(){let t=new Date();t.setHours(0,0,0,0);let s=0,l=0;let rows=meds.map(m=>{let p=ld(m.pickup),e=add(p,m.days),c=add(e,-m.lead),d=diff(c,t),cl='ok',st='';if(d<0){cl='late';st='Rok prošao '+Math.abs(d)+' d.';l++}else if(d===0){cl='late';st='Nazvati danas';l++}else if(d<=7){cl='soon';st='Za '+d+' d.';s++}else st='Za '+d+' d.';return `<tr><td><strong>${esc(m.name)}</strong></td><td>${fmt(p)}</td><td>${m.days} dana</td><td><strong>${fmt(c)}</strong></td><td>${fmt(e)}</td><td><span class="badge ${cl}">${st}</span></td><td><div class="actions"><a class="btn calendar" target="_blank" href="${calUrl(m)}">📅 Dodaj u Google kalendar</a><button class="ghost" onclick="again(${m.id})">✓ Podignut</button><button class="danger" onclick="del(${m.id})">Obriši</button></div></td></tr>`}).join('');$('total').textContent=meds.length;$('soon').textContent=s;$('late').textContent=l;$('list').innerHTML=meds.length?`<table><thead><tr><th>Lijek</th><th>Podignut</th><th>Trajanje</th><th>Nazvati</th><th>Kraj terapije</th><th>Status</th><th>Akcije</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">Još nema unesenih lijekova.</div>'}render();
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function parseDate(v){let a=v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);if(!a)throw Error('Datum upiši kao dd.mm.yyyy.');let d=+a[1],m=+a[2],y=+a[3],x=new Date(y,m-1,d);if(x.getFullYear()!=y||x.getMonth()!=m-1||x.getDate()!=d)throw Error('Datum nije valjan.');return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+async function load(){let {data,error}=await sb.from('lijekovi').select('*').order('datum_podizanja',{ascending:false});if(error){alert(error.message);return}meds=data||[];render()}
+async function del(id){if(confirm('Obrisati lijek?')){let {error}=await sb.from('lijekovi').delete().eq('id',id);if(error)alert(error.message);else load()}}
+async function again(id){let v=prompt('Datum novog podizanja (DD.MM.GGGG):',fmt(new Date()));if(!v)return;try{let {error}=await sb.from('lijekovi').update({datum_podizanja:parseDate(v)}).eq('id',id);if(error)throw error;load()}catch(e){alert(e.message)}}
+function calUrl(m){let end=add(ld(m.datum_podizanja),m.trajanje_dana),call=add(end,-m.nazvati_ranije_dana),next=add(call,1);return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Nazvati doktoricu – '+m.naziv)+'&dates='+compact(call)+'%2F'+compact(next)+'&details='+encodeURIComponent('Nazvati doktoricu radi novog recepta za '+m.naziv+'.\nPosljednje podizanje: '+fmt(ld(m.datum_podizanja))+'.')}
+function render(){let t=new Date();t.setHours(0,0,0,0);let so=0,la=0;let rows=meds.map(m=>{let p=ld(m.datum_podizanja),e=add(p,m.trajanje_dana),c=add(e,-m.nazvati_ranije_dana),d=diff(c,t),cl='ok',st='';if(d<0){cl='late';st='Rok prošao '+Math.abs(d)+' d.';la++}else if(d===0){cl='late';st='Nazvati danas';la++}else if(d<=7){cl='soon';st='Za '+d+' d.';so++}else st='Za '+d+' d.';return `<tr><td><strong>${esc(m.naziv)}</strong></td><td>${fmt(p)}</td><td>${m.trajanje_dana} dana</td><td><strong>${fmt(c)}</strong></td><td>${fmt(e)}</td><td><span class="badge ${cl}">${st}</span></td><td><div class="actions"><a class="btn calendar" target="_blank" href="${calUrl(m)}">📅 Google kalendar</a><button class="ghost" onclick="again(${m.id})">✓ Podignut</button><button class="danger" onclick="del(${m.id})">Obriši</button></div></td></tr>`}).join('');$('total').textContent=meds.length;$('soon').textContent=so;$('late').textContent=la;$('list').innerHTML=meds.length?`<table><thead><tr><th>Lijek</th><th>Podignut</th><th>Trajanje</th><th>Nazvati</th><th>Kraj terapije</th><th>Status</th><th>Akcije</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">Još nema spremljenih lijekova.</div>'}
+async function login(){let email=prompt('Email za prijavu:');if(!email)return;let password=prompt('Lozinka:');if(!password)return;let {data,error}=await sb.auth.signInWithPassword({email,password});if(error){alert('Prijava nije uspjela: '+error.message);return}user=data.user;await load()}
+$('pickup').value=fmt(new Date());$('pickupPicker').value=iso(new Date());
+$('pickup').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);if(v.length>4)v=v.slice(0,2)+'.'+v.slice(2,4)+'.'+v.slice(4);else if(v.length>2)v=v.slice(0,2)+'.'+v.slice(2);e.target.value=v});
+$('calendarBtn').onclick=()=>{let p=$('pickupPicker');if(p.showPicker)p.showPicker();else p.click()};
+$('pickupPicker').onchange=e=>{if(e.target.value)$('pickup').value=fmt(ld(e.target.value))};
+$('form').onsubmit=async e=>{e.preventDefault();if(!user){alert('Prvo se prijavi.');return}try{let row={user_id:user.id,naziv:$('name').value.trim(),datum_podizanja:parseDate($('pickup').value),trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value};let {error}=await sb.from('lijekovi').insert(row);if(error)throw error;$('name').value='';await load()}catch(e){alert(e.message)}};
+(async()=>{let {data}=await sb.auth.getSession();if(data.session){user=data.session.user;load()}else login()})();
 </script></body></html>
