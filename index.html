@@ -87,8 +87,37 @@ $('addProfile').onclick=async()=>{let naziv=prompt('Ime profila / člana obitelj
 function calcDays(){let q=+$('qty').value,d=+$('dose').value;if(q>0&&d>0){let n=Math.floor(q/d);$('days').value=n;$('autoDays').textContent=`Automatski izračun: ${q} ÷ ${d} = ${n} dana terapije.`}else $('autoDays').textContent=''}
 $('qty').oninput=calcDays;$('dose').oninput=calcDays;
 $('showAdd').onclick=()=>{medForm.reset();$('editId').value='';$('days').value=30;$('lead').value=5;$('pickup').value=today();$('medDlgTitle').textContent='Dodaj lijek';renderProfiles();medDlg.showModal()};
-$('medForm').onsubmit=async e=>{e.preventDefault();let id=$('editId').value,row={naziv:$('name').value.trim(),kolicina_pakiranja:$('qty').value||null,doza_dnevno:$('dose').value||null,trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value,biljeska:$('note').value.trim()||null,profil_id:+$('medProfile').value};if(id){let {error}=await sb.from('lijekovi').update(row).eq('id',id);if(error)return alert(error.message)}else{row.user_id=user.id;row.datum_podizanja=$('pickup').value;let {data,error}=await sb.from('lijekovi').insert(row).select().single();if(error)return alert(error.message);await sb.from('podizanja').insert({user_id:user.id,lijek_id:data.id,datum:$('pickup').value,kolicina:$('qty').value||null})}medDlg.close();await loadAll()};
-function editMed(id){let m=meds.find(x=>x.id===id);if(!m)return;$('editId').value=id;$('name').value=m.naziv;$('qty').value=m.kolicina_pakiranja??'';$('dose').value=m.doza_dnevno??'';$('days').value=m.trajanje_dana;$('lead').value=m.nazvati_ranije_dana;$('pickup').value=m.datum_podizanja;$('note').value=m.biljeska??'';renderProfiles();$('medProfile').value=m.profil_id;$('medDlgTitle').textContent='Uredi lijek';calcDays();medDlg.showModal()}
+$('medForm').onsubmit=async e=>{e.preventDefault();
+ let id=$('editId').value;
+ let noviDatum=$('pickup').value;
+ let row={naziv:$('name').value.trim(),kolicina_pakiranja:$('qty').value||null,doza_dnevno:$('dose').value||null,trajanje_dana:+$('days').value,nazvati_ranije_dana:+$('lead').value,biljeska:$('note').value.trim()||null,profil_id:+$('medProfile').value};
+ if(id){
+   id=+id;
+   let m=meds.find(x=>x.id===id);
+   let ps=medPickups(id);
+   let zadnje=ps[0];
+   row.datum_podizanja=noviDatum;
+   let {error}=await sb.from('lijekovi').update(row).eq('id',id);
+   if(error)return alert(error.message);
+   // "Uredi lijek" ispravlja zadnje postojeće podizanje, ne stvara novo.
+   if(zadnje && zadnje.datum!==noviDatum){
+     let {error:histError}=await sb.from('podizanja').update({datum:noviDatum}).eq('id',zadnje.id);
+     if(histError)return alert('Lijek je spremljen, ali datum u povijesti nije ažuriran: '+histError.message);
+   } else if(!zadnje){
+     let {error:histError}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:id,datum:noviDatum,kolicina:$('qty').value||null});
+     if(histError)return alert('Lijek je spremljen, ali zapis povijesti nije napravljen: '+histError.message);
+   }
+ }else{
+   row.user_id=user.id;
+   row.datum_podizanja=noviDatum;
+   let {data,error}=await sb.from('lijekovi').insert(row).select().single();
+   if(error)return alert(error.message);
+   let {error:histError}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:data.id,datum:noviDatum,kolicina:$('qty').value||null});
+   if(histError)return alert('Lijek je dodan, ali zapis povijesti nije napravljen: '+histError.message);
+ }
+ medDlg.close();await loadAll()
+};
+function editMed(id){let m=meds.find(x=>x.id===id);if(!m)return;$('editId').value=id;$('name').value=m.naziv;$('qty').value=m.kolicina_pakiranja??'';$('dose').value=m.doza_dnevno??'';$('days').value=m.trajanje_dana;$('lead').value=m.nazvati_ranije_dana;$('pickup').value=medPickups(id)[0]?.datum||m.datum_podizanja;$('note').value=m.biljeska??'';renderProfiles();$('medProfile').value=m.profil_id;$('medDlgTitle').textContent='Uredi lijek';calcDays();medDlg.showModal()}
 function newPickup(id){let m=meds.find(x=>x.id===id);$('pickupMedId').value=id;$('newPickupDate').value=today();$('newPickupQty').value=m?.kolicina_pakiranja??'';$('pickupNote').value='';pickupDlg.showModal()}
 $('pickupForm').onsubmit=async e=>{e.preventDefault();let id=+$('pickupMedId').value,date=$('newPickupDate').value,qty=$('newPickupQty').value||null;let {error}=await sb.from('podizanja').insert({user_id:user.id,lijek_id:id,datum:date,kolicina:qty,biljeska:$('pickupNote').value.trim()||null});if(error)return alert(error.message);let up={datum_podizanja:date,recept_narucen:false};if(qty)up.kolicina_pakiranja=qty;await sb.from('lijekovi').update(up).eq('id',id);pickupDlg.close();await loadAll()};
 async function toggleOrdered(id,val){let {error}=await sb.from('lijekovi').update({recept_narucen:val}).eq('id',id);if(error)alert(error.message);else loadAll()}
